@@ -6,7 +6,8 @@ process.stdin.setEncoding("utf8");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, './.env') })
 const uri = process.env.MONGO_CONNECTION_STRING;
-const databaseAndCollection = { db: process.env.MONGO_DB_NAME, collection: process.env.MONGO_COLLECTION };
+const fileCollection = { db: process.env.MONGO_DB_NAME, collection: process.env.MONGO_FILECOLLECTION };
+const userCollection = { db: process.env.MONGO_DB_NAME, collection: process.env.MONGO_USERCOLLECTION };
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 
@@ -34,16 +35,33 @@ process.stdin.on("readable", function () {
 
 /* All express */
 const express = require("express");
-const app = express();
 const bodyParser = require("body-parser");
+const nodemailer = require('nodemailer');
+const app = express();
 
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname));
 app.use(bodyParser.urlencoded({ extended: false }));
-app.set("views", path.resolve(__dirname, "templates"));
+app.set("views", path.resolve(__dirname, "views"));
 app.set("view engine", "ejs");
 
 app.get('/', function (req, res) {
     res.render('index');
+});
+
+app.get('/register', function (req, res) {
+    res.render('register');
+});
+
+app.get('/login', function (req, res) {
+    res.render('login');
+});
+
+app.post('/registerSubmit', async function (req, res) {
+    res.render('registerSubmit');
+});
+
+app.post('/loginSubmit', function (req, res) {
+    res.render('main');
 });
 
 app.listen(3000);

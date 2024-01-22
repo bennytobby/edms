@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" href="/styles/userForm.css" />
+  </head>
+  <body>
+    <!-- FORM USED TO REGISTER -->
+    <form action="/loginSubmit" method="post" id="register">
+      <div class="container">
+        <h1>Login</h1>
+
+        <!-- USERID REQUIRED -->
+        <label
+          >User ID<span class="req">*</span>:
+          <input type="text" name="userid" placeholder="jdoe1234" required
+        /></label>
+
+        <!-- PASSWORD REQUIRED  -->
+        <label
+          >Password<span class="req">*</span>:
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter Password"
+            required
+        /></label>
+        <br /><br />
+      </div>
+      <input type="submit" value="Login" />
+    </form>
+  </body>
+</html>

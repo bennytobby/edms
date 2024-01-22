@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <link rel="stylesheet" href="/styles/userForm.css" />
+  </head>
+  <body>
+    <!-- FORM USED TO REGISTER -->
+    <form action="/registerSubmit" method="post" id="register">
+      <div class="container">
+        <h1>Register</h1>
+        <!-- First and Last name REQUIRED -->
+        <label
+          >First Name<span class="req">*</span>:
+          <input type="text" name="first_name" placeholder="John" required
+        /></label>
+
+        <label
+          >Last Name<span class="req">*</span>:
+          <input type="text" name="last_name" placeholder="Doe" required
+        /></label>
+
+        <br />
+        <br />
+
+        <!-- USERID REQUIRED -->
+        <label
+          >User ID<span class="req">*</span>:
+          <input type="text" name="userid" placeholder="jdoe12" required
+        /></label>
+
+        <!-- email address REQUIRED -->
+        <label
+          >Email Address<span class="req">*</span>:
+          <input
+            type="email"
+            name="email"
+            placeholder="jdoe@email.com"
+            required
+        /></label>
+
+        <br /><br />
+
+        <!-- PASSWORD REQUIRED  -->
+        <label
+          >Password<span class="req">*</span>:
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter Password"
+            required
+        /></label>
+
+        <label
+          >Confirm Password<span class="req">*</span>:
+          <input
+            type="password"
+            name="confirm_pass"
+            placeholder="Confirm Password"
+            required
+        /></label>
+
+        <br />
+        <br />
+
+        <!-- phone number -->
+        <label
+          >Phone:
+          <input
+            type="text"
+            size="3"
+            maxlength="3"
+            name="phoneFirstPart"
+            id="phoneFirst"
+            placeholder="123"
+          />
+          <strong>-</strong>
+          <input
+            type="text"
+            size="3"
+            maxlength="3"
+            name="phoneSecondPart"
+            id="phoneSec"
+            placeholder="456"
+          />
+          <strong>-</strong>
+          <input
+            type="text"
+            size="4"
+            maxlength="4"
+            name="phoneThirdPart"
+            id="phoneThird"
+            placeholder="7890"
+          />
+        </label>
+
+        <br />
+      </div>
+      <input type="submit" value="Create Account" />
+    </form>
+  </body>
+</html>

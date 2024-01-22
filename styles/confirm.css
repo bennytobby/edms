@@ -10,6 +10,7 @@ body {
 }
 
 .container {
+  text-align: left;
   background-color: white;
   padding: 20px;
   border-radius: 8px;
@@ -20,21 +21,5 @@ body {
 
 h1 {
   color: black;
-}
-
-a {
-  display: inline-block;
-  margin: 10px 0;
-  padding: 10px 20px;
-  text-decoration: none;
-  color: grey;
-  background-color: lightblue;
-  border-radius: 4px;
-  width: 20%;
-  transition: background-color 0.3s;
-}
-
-a:hover {
-  background-color: mediumaquamarine;
-  color: black;
+  text-align: center;
 }
