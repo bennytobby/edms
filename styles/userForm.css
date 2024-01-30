@@ -31,7 +31,7 @@ h1 {
   text-align: center;
 }
 
-input[type="submit"] {
+.button {
   display: inline-block;
   margin: 10px 0;
   padding: 10px 20px;
@@ -41,7 +41,7 @@ input[type="submit"] {
   width: 130px;
 }
 
-input[type="submit"]:hover {
+.button:hover {
   background-color: mediumaquamarine;
   color: black;
 }

@@ -57,11 +57,56 @@ app.get('/login', function (req, res) {
 });
 
 app.post('/registerSubmit', async function (req, res) {
+    /* Find DB entry based on email */
+    try {
+        await client.connect();
+        let filter = { email: req.body.email };
+        const result = await client.db(userCollection.db).collection(userCollection.collection).findOne(filter);
+
+        if (result) {
+            res.render('emailExists')
+        }
+    } catch (e) {
+        console.error(e);
+    } finally {
+        await client.close();
+    }
+
     res.render('registerSubmit');
 });
 
-app.post('/loginSubmit', function (req, res) {
-    res.render('main');
+app.post('/loginSubmit', async function (req, res) {
+    /* Find DB entry based on email */
+    try {
+        await client.connect();
+        let filter = { email: req.body.email };
+        const result = await client.db(userCollection.db).collection(userCollection.collection).findOne(filter);
+
+        if (result) {
+            /* Access other variables from the database entry */
+            const { firstname, lastname, userid, email, pass, phone } = result;
+            const storedPass = result.pass;
+
+            if (req.body.password !== storedPass) {
+                res.render('incorrectPass');
+            }
+
+            /* Handle POST request for /apply */
+            variables = {
+                firstname: firstname,
+                lastname: lastname,
+                userid: userid,
+                email: req.body.email,
+                pass: pass,
+                phone: phone
+            };
+        }
+    } catch (e) {
+        console.error(e);
+    } finally {
+        await client.close();
+    }
+    res.render('main', variables);
 });
 
 app.listen(3000);
