@@ -56,6 +56,7 @@ app.get('/login', function (req, res) {
     res.render('login');
 });
 
+// TO-DO: Add entries into database
 app.post('/registerSubmit', async function (req, res) {
     /* Find DB entry based on email */
     try {
@@ -80,33 +81,42 @@ app.post('/loginSubmit', async function (req, res) {
     try {
         await client.connect();
         let filter = { email: req.body.email };
-        const result = await client.db(userCollection.db).collection(userCollection.collection).findOne(filter);
+        const result = await client
+            .db(userCollection.db)
+            .collection(userCollection.collection)
+            .findOne(filter);
 
-        if (result) {
-            /* Access other variables from the database entry */
-            const { firstname, lastname, userid, email, pass, phone } = result;
-            const storedPass = result.pass;
-
-            if (req.body.password !== storedPass) {
-                res.render('incorrectPass');
-            }
-
-            /* Handle POST request for /apply */
-            variables = {
-                firstname: firstname,
-                lastname: lastname,
-                userid: userid,
-                email: req.body.email,
-                pass: pass,
-                phone: phone
-            };
+        // Exit Case 1: Email not found
+        if (!result) {
+            return res.render('userNotFound');
         }
+
+        /* Access other variables from the database entry */
+        const { firstname, lastname, userid, email, pass, phone } = result;
+
+        // Exit Case 2: Password incorrect
+        if (req.body.password !== pass) {
+            return res.render('incorrectPass');
+        }
+
+        // Exit Case 3: Successful login
+        /* Handle POST request for /apply */
+        const variables = {
+            firstname,
+            lastname,
+            userid,
+            email,
+            pass,
+            phone,
+        };
+
+        return res.render('main', variables);
     } catch (e) {
         console.error(e);
+        return res.status(500).send("Server error. Try again later.");
     } finally {
         await client.close();
     }
-    res.render('main', variables);
 });
 
 app.listen(3000);
