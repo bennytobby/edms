@@ -38,6 +38,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const nodemailer = require('nodemailer');
 const app = express();
+app.use(express.static(__dirname));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.set("views", path.resolve(__dirname, "views"));
+app.set("view engine", "ejs");
 
 
 /* Session Handling */
@@ -50,14 +54,33 @@ app.use(session({
 }));
 
 
+/* Email Handling */
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
+
+
 /* Password Hashing */
 const bcrypt = require('bcrypt');
 
 
-app.use(express.static(__dirname));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.set("views", path.resolve(__dirname, "views"));
-app.set("view engine", "ejs");
+/* Upload directory */
+app.use('/uploads', express.static('uploads'));
+const multer = require("multer");
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "uploads/");
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + "_" + file.originalname);
+    },
+});
+const upload = multer({ storage: storage });
+
 
 app.get('/', function (req, res) {
     res.render('index');
@@ -71,17 +94,107 @@ app.get('/login', function (req, res) {
     res.render('login');
 });
 
-/* Protected route to check session details */
-app.get('/dashboard', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    res.render('dashboard', { user: req.session.user });
+
+app.get('/dashboard', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+
+    const searchTerm = req.query.search?.trim().toLowerCase();
+    const searchFilter = searchTerm
+        ? {
+            $or: [
+                { originalName: { $regex: searchTerm, $options: "i" } },
+                { uploadedBy: { $regex: searchTerm, $options: "i" } },
+                { tags: { $in: [searchTerm] } }
+            ]
+        }
+        : {};
+
+    try {
+        await client.connect();
+
+        const fileDocs = await client
+            .db(fileCollection.db)
+            .collection(fileCollection.collection)
+            .find(searchFilter)
+            .sort({ uploadDate: -1 })
+            .toArray();
+
+        res.render('dashboard', {
+            firstname: req.session.user.firstname,
+            email: req.session.user.email,
+            files: fileDocs,
+            search: searchTerm
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).send("Failed to load dashboard.");
+    } finally {
+        await client.close();
+    }
 });
 
+
 app.get('/logout', (req, res) => {
-    req.session.destroy(() => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send("Could not log out.");
+        }
         res.redirect('/');
     });
 });
+
+
+const fs = require('fs');
+const fsPath = require('path');
+app.get("/delete/:filename", async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/login");
+    }
+
+    const filename = req.params.filename;
+    const filePath = fsPath.join(__dirname, "uploads", filename);
+
+    try {
+        /* Delete from DB */
+        await client.connect();
+        const deleteResult = await client
+            .db(fileCollection.db)
+            .collection(fileCollection.collection)
+            .deleteOne({ filename });
+
+        /* Delete from LOCAL */
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        res.redirect("/dashboard");
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error deleting file.");
+    } finally {
+        await client.close();
+    }
+});
+
+
+app.get("/download/:filename", (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/login");
+    }
+
+    /* Download from LOCAL */
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, "uploads", filename);
+    res.download(filePath, (err) => {
+        if (err) {
+            console.error("Download error:", err);
+            res.status(500).send("File could not be downloaded.");
+        }
+    });
+});
+
 
 app.post('/registerSubmit', async function (req, res) {
     /* Find DB entry based on email */
@@ -175,16 +288,7 @@ app.post('/loginSubmit', async function (req, res) {
 
         /* Successful login */
         const { firstname, lastname, userid, email, phone } = result;
-        const variables = { firstname, lastname, userid, email, phone };
-
-        req.session.user = {
-            firstname: result.firstname,
-            lastname: result.lastname,
-            userid: result.userid,
-            email: result.email,
-            phone: result.phone
-        };
-
+        req.session.user = { firstname, lastname, userid, email, phone };
         return res.redirect('/dashboard');
     } catch (e) {
         console.error(e);
@@ -193,5 +297,61 @@ app.post('/loginSubmit', async function (req, res) {
         await client.close();
     }
 });
+
+
+app.post("/upload", upload.single("document"), async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/login");
+    }
+
+    const file = req.file;
+    if (!file) {
+        return res.status(400).send("No file uploaded.");
+    }
+
+    const fileMeta = {
+        filename: file.filename,
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        uploadDate: new Date(),
+        uploadedBy: req.session.user.userid,
+        description: req.body.description || "",
+        tags: req.body.tags ? req.body.tags.split(',').map(tag => tag.trim().toLowerCase()) : []
+    };
+
+    try {
+        /* Insert into DB */
+        await client.connect();
+        await client
+            .db(fileCollection.db)
+            .collection(fileCollection.collection)
+            .insertOne(fileMeta);
+
+        /* Send email notification */
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: req.session.user.email,
+            subject: "EDMS File Upload Confirmation",
+            text: `Hello ${req.session.user.firstname},\n\nYour file "${file.originalname}" has been uploaded successfully on ${new Date().toLocaleString()}.\n\n- EDMS Team`
+        };
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.error("Error sending email:", err);
+            } else {
+                console.log("Email sent:", info.response);
+            }
+        });
+
+        res.redirect("/dashboard");
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("File upload failed.");
+    } finally {
+        await client.close();
+    }
+});
+
+
 
 app.listen(3000);
