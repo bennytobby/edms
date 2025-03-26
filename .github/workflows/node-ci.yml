@@ -1,0 +1,41 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      MONGO_CONNECTION_STRING: ${{ secrets.MONGO_CONNECTION_STRING }}
+      MONGO_DB_USERNAME: ${{ secrets.MONGO_DB_USERNAME }}
+      MONGO_DB_PASSWORD: ${{ secrets.MONGO_DB_PASSWORD }}
+      MONGO_DB_NAME: ${{ secrets.MONGO_DB_NAME }}
+      MONGO_FILECOLLECTION: ${{ secrets.MONGO_FILECOLLECTION }}
+      MONGO_USERCOLLECTION: ${{ secrets.MONGO_USERCOLLECTION }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      EMAIL_USER: ${{ secrets.EMAIL_USER }}
+      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
