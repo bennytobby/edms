@@ -44,7 +44,6 @@ $ node server.js 5000
 
 # App will be available at:
 http://localhost:3000 (default)
-
 http://localhost:<custom_port> (if specified)
 ```
 
