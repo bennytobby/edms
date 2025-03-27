@@ -21,8 +21,8 @@ const s3 = new AWS.S3({
 const AWS_BUCKET = process.env.AWS_S3_BUCKET;
 
 /* Prompting User Input */
-const portNumber = process.argv[2];
-const prompt = `Web server started running at http://localhost:3000\nStop to shutdown the server: `;
+const portNumber = process.argv[2] || 3000;
+const prompt = `Web server started running at http://localhost:${portNumber}\nStop to shutdown the server: `;
 process.stdout.write(prompt);
 
 process.stdin.on("readable", function () {
@@ -315,4 +315,4 @@ app.post("/upload", upload.single("document"), async (req, res) => {
     }
 });
 
-app.listen(3000);
+app.listen(portNumber);

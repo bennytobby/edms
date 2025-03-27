@@ -36,32 +36,29 @@ $ cp .env.example .env
 # 4. Run the app
 $ node server.js
 
-# App will run at:
-http://localhost:3000
+# Default port 3000:
+$ node server.js
+
+# OR specify a custom port:
+$ node server.js 5000
+
+# App will be available at:
+http://localhost:3000 (default)
+
+http://localhost:<custom_port> (if specified)
 ```
 
 ## Project Structure
 
 ```
 ├── server.js              # Main Express server
-├── views/                 # EJS templates
-├── public/                # Static files
-├── uploads/               # (Deprecated, replaced by AWS S3)
+├── views/                 # EJS templates (frontend)
+├── public/                # Static assets (CSS, JS)
+├── styles/                # CSS stylesheets
 ├── .env.example           # Environment config template
-├── .github/workflows/     # CI workflow
+├── .github/workflows/     # GitHub Actions workflow
+├── test/                  # Testing setup (optional)
 ```
-
-## GitHub Actions
-
-On push to `main`, the app:
-
-- Lints the codebase
-- Verifies environment variables
-- Optionally runs tests
-
-## Screenshots
-
-_Add screenshots to the `/screenshots/` folder and reference them here._
 
 ## Security Notes
 
@@ -71,6 +68,7 @@ _Add screenshots to the `/screenshots/` folder and reference them here._
 
 ## Future Roadmap
 
+- [ ] Add thorough testing framework
 - [ ] Folder-style grouping
 - [ ] Admin panel
 - [ ] Public/private sharing
