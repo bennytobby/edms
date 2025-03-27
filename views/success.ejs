@@ -3,20 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to EDMS</title>
+    <title><%= title %></title>
     <link rel="stylesheet" href="/styles/main.css" />
   </head>
   <body>
     <header class="topbar">
-      <h2>Welcome to EDMS</h2>
+      <h2><%= title %></h2>
     </header>
 
-    <main class="centered">
-      <h1 class="title">Electronic Document Management System</h1>
-      <div class="button-group">
-        <a href="/login" class="button primary">Log In</a>
-        <a href="/register" class="button secondary">Sign Up</a>
-      </div>
+    <main class="container">
+      <h1><%= title %></h1>
+      <p><%= message %></p>
+      <a href="<%= link %>" class="button"><%= linkText %></a>
     </main>
 
     <footer>

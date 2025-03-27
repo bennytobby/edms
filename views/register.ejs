@@ -3,47 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Register</title>
-    <link rel="stylesheet" href="/styles/userForm.css" />
+    <title>Register - EDMS</title>
+    <link rel="stylesheet" href="/styles/main.css" />
   </head>
   <body>
-    <!-- FORM USED TO REGISTER -->
-    <form action="/registerSubmit" method="post" id="register">
-      <div class="container">
-        <h1>Register</h1>
-        <!-- First and Last name REQUIRED -->
+    <header class="topbar">
+      <h2>Register - EDMS</h2>
+    </header>
+
+    <main class="container">
+      <form action="/registerSubmit" method="post" class="auth-form">
+        <h1>Create Your EDMS Account</h1>
+
         <label
           >First Name<span class="req">*</span>:
-          <input type="text" name="first_name" placeholder="John" required
-        /></label>
+          <input type="text" name="first_name" placeholder="John" required />
+        </label>
 
         <label
           >Last Name<span class="req">*</span>:
-          <input type="text" name="last_name" placeholder="Doe" required
-        /></label>
+          <input type="text" name="last_name" placeholder="Doe" required />
+        </label>
 
-        <br />
-        <br />
-
-        <!-- USERID REQUIRED -->
         <label
           >User ID<span class="req">*</span>:
-          <input type="text" name="userid" placeholder="jdoe12" required
-        /></label>
+          <input type="text" name="userid" placeholder="jdoe12" required />
+        </label>
 
-        <!-- email address REQUIRED -->
         <label
-          >Email Address<span class="req">*</span>:
+          >Email<span class="req">*</span>:
           <input
             type="email"
             name="email"
-            placeholder="jdoe@email.com"
+            placeholder="john@doe.com"
             required
-        /></label>
+          />
+        </label>
 
-        <br /><br />
-
-        <!-- PASSWORD REQUIRED  -->
         <label
           >Password<span class="req">*</span>:
           <input
@@ -51,7 +47,8 @@
             name="password"
             placeholder="Enter Password"
             required
-        /></label>
+          />
+        </label>
 
         <label
           >Confirm Password<span class="req">*</span>:
@@ -60,21 +57,27 @@
             name="confirm_pass"
             placeholder="Confirm Password"
             required
-        /></label>
+          />
+        </label>
 
-        <br />
-        <br />
-
-        <!-- phone number -->
         <label
           >Phone:
           <input type="text" name="phone" placeholder="123-456-7890" />
         </label>
 
-        <br />
-      </div>
-      <input type="reset" class="button" value="Reset Form" />
-      <input type="submit" class="button" value="Create Account" />
-    </form>
+        <div class="form-buttons">
+          <input type="reset" value="Reset Form" />
+          <input type="submit" value="Create Account" />
+        </div>
+
+        <p class="alt-link">
+          Already have an account? <a href="/login">Login here</a>
+        </p>
+      </form>
+    </main>
+
+    <footer>
+      <p>&copy; <%= new Date().getFullYear() %> Paramraj Singh Machre</p>
+    </footer>
   </body>
 </html>

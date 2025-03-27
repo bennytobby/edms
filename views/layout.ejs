@@ -3,21 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Welcome to EDMS</title>
+    <title><%= title || 'EDMS' %></title>
     <link rel="stylesheet" href="/styles/main.css" />
   </head>
   <body>
     <header class="topbar">
-      <h2>Welcome to EDMS</h2>
+      <h2><%= title || 'EDMS' %></h2>
+      <% if (user) { %>
+      <div class="user-info">
+        Welcome, <strong><%= user.firstname %></strong> |
+        <a href="/logout" class="logout-btn">Logout</a>
+      </div>
+      <% } %>
     </header>
 
-    <main class="centered">
-      <h1 class="title">Electronic Document Management System</h1>
-      <div class="button-group">
-        <a href="/login" class="button primary">Log In</a>
-        <a href="/register" class="button secondary">Sign Up</a>
-      </div>
-    </main>
+    <main class="container"><%- body %></main>
 
     <footer>
       <p>&copy; <%= new Date().getFullYear() %> Paramraj Singh Machre</p>

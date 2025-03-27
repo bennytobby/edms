@@ -1,0 +1,133 @@
+.topbar {
+  background-color: #1e2a38;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info {
+  font-size: 0.95rem;
+}
+
+.logout-btn {
+  color: #ffb3b3;
+  text-decoration: none;
+  margin-left: 0.5rem;
+}
+
+.logout-btn:hover {
+  text-decoration: underline;
+}
+
+.container h1 {
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.button {
+  padding: 0.6rem 1.2rem;
+  background-color: #1976d2;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.button:hover {
+  background-color: #125a9c;
+}
+
+.alt-link {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.req {
+  color: red;
+  margin-left: 2px;
+}
+
+input[type="submit"],
+input[type="reset"] {
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+input[type="submit"] {
+  background-color: #1976d2;
+  color: white;
+}
+
+input[type="reset"] {
+  background-color: #ccc;
+  color: #333;
+}
+
+.auth-form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #ccc;
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: 1em;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+  width: 100%;
+  padding: 0.5em;
+  margin-top: 0.3em;
+}
+
+.upload-form {
+  background-color: #f4f8ff;
+  padding: 1.5rem;
+  border-radius: 6px;
+  margin-top: 2rem;
+}
+
+.upload-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+}
+
+.upload-form input[type="file"],
+.upload-form input[type="text"],
+.upload-form input[type="submit"] {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.upload-form input[type="submit"] {
+  width: fit-content;
+  align-self: flex-start;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+}
+
+.upload-form input[type="submit"]:hover {
+  background-color: #125a9c;
+}

@@ -1,6 +1,7 @@
 /* All Processes */
 process.stdin.setEncoding("utf8");
 
+
 /* MongoDB Connections */
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, './.env') });
@@ -9,6 +10,7 @@ const fileCollection = { db: process.env.MONGO_DB_NAME, collection: process.env.
 const userCollection = { db: process.env.MONGO_DB_NAME, collection: process.env.MONGO_USERCOLLECTION };
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
+
 
 /* AWS Connection */
 const AWS = require('aws-sdk');
@@ -20,11 +22,11 @@ const s3 = new AWS.S3({
 });
 const AWS_BUCKET = process.env.AWS_S3_BUCKET;
 
+
 /* Prompting User Input */
 const portNumber = process.argv[2] || 3000;
 const prompt = `Web server started running at http://localhost:${portNumber}\nStop to shutdown the server: `;
 process.stdout.write(prompt);
-
 process.stdin.on("readable", function () {
     let dataInput = process.stdin.read();
     let command = dataInput.trim();
@@ -38,6 +40,7 @@ process.stdin.on("readable", function () {
     process.stdin.resume();
 });
 
+
 /* All express */
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -47,6 +50,8 @@ app.use(express.static(__dirname));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.set("views", path.resolve(__dirname, "views"));
 app.set("view engine", "ejs");
+app.use("/styles", express.static(path.join(__dirname, "styles")));
+
 
 /* Session Handling */
 const session = require("express-session");
@@ -57,6 +62,7 @@ app.use(session({
     cookie: { secure: false }
 }));
 
+
 /* Email Handling */
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -66,8 +72,10 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+
 /* Password Hashing */
 const bcrypt = require('bcrypt');
+
 
 /* Upload */
 const multer = require("multer");
@@ -75,15 +83,15 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 app.get('/', function (req, res) {
-    res.render('index');
+    res.render('index', { title: "Welcome to EDMS" });
 });
 
 app.get('/register', function (req, res) {
-    res.render('register');
+    res.render('register', { title: "Register - EDMS" });
 });
 
 app.get('/login', function (req, res) {
-    res.render('login');
+    res.render('login', { title: "Login - EDMS" });
 });
 
 app.get('/dashboard', async (req, res) => {
@@ -194,14 +202,44 @@ app.post('/registerSubmit', async function (req, res) {
             .findOne(conflictFilter);
 
         if (result) {
-            if (result.email === req.body.email) return res.render('emailExists');
-            if (result.userid === req.body.userid) return res.render('userIdExists');
+            if (result.email === req.body.email) {
+                return res.render('error', {
+                    title: "Email Exists",
+                    message: "The email already exists in the database.",
+                    link: "/register",
+                    linkText: "Back to Registration"
+                });
+            }
+            if (result.userid === req.body.userid) {
+                return res.render('error', {
+                    title: "UserID Exists",
+                    message: "Please choose a different userID.",
+                    link: "/register",
+                    linkText: "Back to Registration"
+                });
+            }
         }
 
-        if (req.body.password !== req.body.confirm_pass) return res.render('passwordMismatch');
+        if (req.body.password !== req.body.confirm_pass) {
+            if (req.body.password !== req.body.confirm_pass) {
+                return res.render('error', {
+                    title: "Password Mismatch",
+                    message: "The passwords entered do not match.",
+                    link: "/register",
+                    linkText: "Try Again"
+                });
+            }
+        }
 
         const phone = req.body.phone?.trim();
-        if (phone && !/^\d{3}-\d{3}-\d{4}$/.test(phone)) return res.render('invalidPhone');
+        if (phone && !/^\d{3}-\d{3}-\d{4}$/.test(phone)) {
+            return res.render('error', {
+                title: "Invalid Phone Format",
+                message: "Phone number must match xxx-xxx-xxxx.",
+                link: "/register",
+                linkText: "Back to Register"
+            });
+        }
 
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const newUser = {
@@ -229,13 +267,24 @@ app.post('/registerSubmit', async function (req, res) {
             else console.log("Welcome email sent:", info.response);
         });
 
-        return res.render('registerSubmit');
+        return res.render('success', {
+            title: "Registration Complete",
+            message: "Your account has been successfully created.",
+            link: "/login",
+            linkText: "Login Now"
+        });
     } catch (e) {
         console.error(e);
     } finally {
         await client.close();
     }
-    res.render('registerSubmit');
+    res.render('success', {
+        title: "Registration Complete",
+        message: "Your account has been successfully created.",
+        link: "/login",
+        linkText: "Login Now"
+    });
+
 });
 
 app.post('/loginSubmit', async function (req, res) {
@@ -247,9 +296,24 @@ app.post('/loginSubmit', async function (req, res) {
             .collection(userCollection.collection)
             .findOne(filter);
 
-        if (!result) return res.render('userNotFound');
+        if (!result) {
+            return res.render('error', {
+                title: "User Not Found",
+                message: "No account found with the given UserID.",
+                link: "/login",
+                linkText: "Try Again"
+            });
+        }
+
         const passwordMatch = await bcrypt.compare(req.body.password, result.pass);
-        if (!passwordMatch) return res.render('incorrectPass');
+        if (!passwordMatch) {
+            return res.render('error', {
+                title: "Incorrect Password",
+                message: "The password entered does not match. Please try again.",
+                link: "/login",
+                linkText: "Back to Login"
+            });
+        }
 
         const { firstname, lastname, userid, email, phone } = result;
         req.session.user = { firstname, lastname, userid, email, phone };
@@ -306,7 +370,12 @@ app.post("/upload", upload.single("document"), async (req, res) => {
             else console.log("Email sent:", info.response);
         });
 
-        res.redirect("/dashboard");
+        res.render('success', {
+            title: "Upload Successful",
+            message: "Your file has been uploaded to the system.",
+            link: "/dashboard",
+            linkText: "Return to Dashboard"
+        });
     } catch (err) {
         console.error("Upload failed:", err);
         res.status(500).send("File upload failed.");
