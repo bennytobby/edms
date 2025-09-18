@@ -23,22 +23,10 @@ const s3 = new AWS.S3({
 const AWS_BUCKET = process.env.AWS_S3_BUCKET;
 
 
-/* Prompting User Input */
-const portNumber = process.argv[2] || 3000;
-const prompt = `Web server started running at http://localhost:${portNumber}\nStop to shutdown the server: `;
-process.stdout.write(prompt);
-process.stdin.on("readable", function () {
-    let dataInput = process.stdin.read();
-    let command = dataInput.trim();
-    if ((command === "Stop") || (command === "stop")) {
-        process.stdout.write("Shutting down the server\n");
-        process.exit(0);
-    } else {
-        process.stdout.write(`Invalid command: ${dataInput}`);
-    }
-    process.stdout.write(prompt);
-    process.stdin.resume();
-});
+/* Port Configuration */
+const portNumber = process.env.PORT || process.argv[2] || 3000;
+// Server startup message
+console.log(`EDMS Server started on port ${portNumber}`);
 
 
 /* All express */
