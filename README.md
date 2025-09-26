@@ -30,21 +30,48 @@ $ cd edms
 # 2. Install dependencies
 $ npm install
 
-# 3. Create a .env file using the template
-$ cp .env.example .env
+# 3. Create a .env file with your configuration
+$ touch .env
+# Add your MongoDB, AWS S3, and email credentials to .env
 
 # 4. Run the app
 $ node server.js
 
-# Default port 3000:
-$ node server.js
-
-# OR specify a custom port:
-$ node server.js 5000
-
 # App will be available at:
-http://localhost:3000 (default)
-http://localhost:<custom_port> (if specified)
+http://localhost:3000
+```
+
+## Deploy to Heroku
+
+```bash
+# 1. Install Heroku CLI
+# Download from: https://devcenter.heroku.com/articles/heroku-cli
+
+# 2. Login to Heroku
+$ heroku login
+
+# 3. Create Heroku app
+$ heroku create your-edms-app-name
+
+# 4. Set environment variables
+$ heroku config:set MONGO_CONNECTION_STRING="your_mongo_connection_string"
+$ heroku config:set MONGO_DB_USERNAME="your_mongo_username"
+$ heroku config:set MONGO_DB_PASSWORD="your_mongo_password"
+$ heroku config:set MONGO_DB_NAME="your_database_name"
+$ heroku config:set MONGO_FILECOLLECTION="files"
+$ heroku config:set MONGO_USERCOLLECTION="users"
+$ heroku config:set SECRET_KEY="your_secret_key"
+$ heroku config:set EMAIL_USER="your_email@gmail.com"
+$ heroku config:set EMAIL_PASS="your_app_password"
+$ heroku config:set AWS_ACCESS_KEY_ID="your_aws_access_key"
+$ heroku config:set AWS_SECRET_ACCESS_KEY="your_aws_secret_key"
+$ heroku config:set AWS_REGION="us-east-1"
+$ heroku config:set AWS_S3_BUCKET="your-bucket-name"
+
+# 5. Deploy to Heroku
+$ git add .
+$ git commit -m "Deploy to Heroku"
+$ git push heroku main
 ```
 
 ## Project Structure

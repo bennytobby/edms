@@ -15,59 +15,97 @@
       <form action="/registerSubmit" method="post" class="auth-form">
         <h1>Create Your EDMS Account</h1>
 
-        <label
-          >First Name<span class="req">*</span>:
-          <input type="text" name="first_name" placeholder="John" required />
-        </label>
+        <div class="form-group">
+          <label for="first_name">
+            First Name<span class="req">*</span>
+          </label>
+          <input
+            type="text"
+            name="first_name"
+            id="first_name"
+            placeholder="Enter your first name"
+            required
+          />
+        </div>
 
-        <label
-          >Last Name<span class="req">*</span>:
-          <input type="text" name="last_name" placeholder="Doe" required />
-        </label>
+        <div class="form-group">
+          <label for="last_name">
+            Last Name<span class="req">*</span>
+          </label>
+          <input
+            type="text"
+            name="last_name"
+            id="last_name"
+            placeholder="Enter your last name"
+            required
+          />
+        </div>
 
-        <label
-          >User ID<span class="req">*</span>:
-          <input type="text" name="userid" placeholder="jdoe12" required />
-        </label>
+        <div class="form-group">
+          <label for="userid">
+            User ID<span class="req">*</span>
+          </label>
+          <input
+            type="text"
+            name="userid"
+            id="userid"
+            placeholder="Choose a unique user ID"
+            required
+          />
+        </div>
 
-        <label
-          >Email<span class="req">*</span>:
+        <div class="form-group">
+          <label for="email">
+            Email<span class="req">*</span>
+          </label>
           <input
             type="email"
             name="email"
-            placeholder="john@doe.com"
+            id="email"
+            placeholder="Enter your email address"
             required
           />
-        </label>
+        </div>
 
-        <label
-          >Password<span class="req">*</span>:
+        <div class="form-group">
+          <label for="password">
+            Password<span class="req">*</span>
+          </label>
           <input
             type="password"
             name="password"
-            placeholder="Enter Password"
+            id="password"
+            placeholder="Create a strong password"
             required
           />
-        </label>
+        </div>
 
-        <label
-          >Confirm Password<span class="req">*</span>:
+        <div class="form-group">
+          <label for="confirm_pass">
+            Confirm Password<span class="req">*</span>
+          </label>
           <input
             type="password"
             name="confirm_pass"
-            placeholder="Confirm Password"
+            id="confirm_pass"
+            placeholder="Confirm your password"
             required
           />
-        </label>
+        </div>
 
-        <label
-          >Phone:
-          <input type="text" name="phone" placeholder="123-456-7890" />
-        </label>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input
+            type="text"
+            name="phone"
+            id="phone"
+            placeholder="123-456-7890"
+          />
+        </div>
 
         <div class="form-buttons">
           <input type="reset" value="Reset Form" />
-          <input type="submit" value="Create Account" />
+          <input type="submit" value="Create Account" class="button primary" />
         </div>
 
         <p class="alt-link">
@@ -79,5 +117,7 @@
     <footer>
       <p>&copy; <%= new Date().getFullYear() %> Paramraj Singh Machre</p>
     </footer>
+
+    <script src="/js/app.js"></script>
   </body>
 </html>
