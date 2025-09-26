@@ -18,6 +18,7 @@ A web-based document management system built with **Node.js**, **Express**, **Mo
 - File Storage: AWS S3
 - Email: Nodemailer (Gmail)
 - Templating: EJS
+- Deployment: Heroku
 - CI/CD: GitHub Actions
 
 ## How to Run Locally
