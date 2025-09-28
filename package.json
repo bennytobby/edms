@@ -19,6 +19,22 @@
     "process": "^0.11.10"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit/",
+    "test:integration": "jest tests/integration/",
+    "test:security": "jest tests/security/",
+    "test:performance": "jest tests/performance/",
+    "test:ci": "jest tests/ci/",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:security && npm run test:performance && npm run test:ci",
+    "test:cleanup": "node tests/cleanup.js",
+    "test:full": "npm run test:cleanup && npm run test:all && npm run test:cleanup",
+    "heroku-postbuild": "echo 'Skipping test dependencies in production'"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
   }
 }
