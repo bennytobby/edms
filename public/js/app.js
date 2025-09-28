@@ -15,7 +15,7 @@ function initAnalytics() {
     if (window.va) {
         window.va('track', 'page_view');
     }
-    
+
     // Track file uploads
     const fileInputs = document.querySelectorAll('input[type="file"]');
     fileInputs.forEach(input => {
@@ -28,7 +28,7 @@ function initAnalytics() {
             }
         });
     });
-    
+
     // Track form submissions
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
@@ -41,7 +41,7 @@ function initAnalytics() {
             }
         });
     });
-    
+
     // Track file downloads
     const downloadLinks = document.querySelectorAll('a[href*="/download/"]');
     downloadLinks.forEach(link => {
