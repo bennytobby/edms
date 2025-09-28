@@ -6,7 +6,109 @@ document.addEventListener('DOMContentLoaded', function () {
     initFileUpload();
     initSearchEnhancements();
     initAnimations();
+    initAnalytics();
 });
+
+// Vercel Analytics Integration
+function initAnalytics() {
+    // Track page views
+    if (typeof window.va === 'function') {
+        window.va('track', 'page_view', {
+            page: window.location.pathname,
+            title: document.title
+        });
+    }
+
+    // Track form submissions
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function() {
+            if (typeof window.va === 'function') {
+                const formName = this.getAttribute('action') || 'unknown_form';
+                window.va('track', 'form_submit', {
+                    form_name: formName,
+                    page: window.location.pathname
+                });
+            }
+        });
+    });
+
+    // Track file uploads
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.files.length > 0 && typeof window.va === 'function') {
+                window.va('track', 'file_upload', {
+                    file_count: this.files.length,
+                    page: window.location.pathname
+                });
+            }
+        });
+    });
+
+    // Track file downloads
+    const downloadLinks = document.querySelectorAll('a[href*="/download/"]');
+    downloadLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (typeof window.va === 'function') {
+                const fileName = this.getAttribute('href').split('/').pop();
+                window.va('track', 'file_download', {
+                    file_name: fileName,
+                    page: window.location.pathname
+                });
+            }
+        });
+    });
+
+    // Track file deletions
+    const deleteLinks = document.querySelectorAll('a[href*="/delete/"]');
+    deleteLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (typeof window.va === 'function') {
+                const fileName = this.getAttribute('href').split('/').pop();
+                window.va('track', 'file_delete', {
+                    file_name: fileName,
+                    page: window.location.pathname
+                });
+            }
+        });
+    });
+
+    // Track user authentication
+    const loginForm = document.querySelector('form[action="/loginSubmit"]');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function() {
+            if (typeof window.va === 'function') {
+                window.va('track', 'user_login', {
+                    page: window.location.pathname
+                });
+            }
+        });
+    }
+
+    const registerForm = document.querySelector('form[action="/registerSubmit"]');
+    if (registerForm) {
+        registerForm.addEventListener('submit', function() {
+            if (typeof window.va === 'function') {
+                window.va('track', 'user_register', {
+                    page: window.location.pathname
+                });
+            }
+        });
+    }
+
+    // Track logout
+    const logoutLinks = document.querySelectorAll('a[href="/logout"]');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (typeof window.va === 'function') {
+                window.va('track', 'user_logout', {
+                    page: window.location.pathname
+                });
+            }
+        });
+    });
+}
 
 // Form Validation
 function initFormValidation() {

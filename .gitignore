@@ -6,3 +6,4 @@ node_modules/
 .elasticbeanstalk/
 *.zip
 tests/config/test.env
+.vercel
