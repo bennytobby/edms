@@ -1,4 +1,9 @@
 const request = require('supertest');
+
+// Mock MongoDB and AWS before importing the app
+jest.mock('mongodb', () => require('../mocks/mongodb.mock'));
+jest.mock('aws-sdk', () => require('../mocks/aws-s3.mock'));
+
 const app = require('../../server'); // Import the app
 
 describe('EDMS Performance Tests', () => {
