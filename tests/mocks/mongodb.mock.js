@@ -15,5 +15,8 @@ const mockMongoClient = {
 };
 
 module.exports = {
-    MongoClient: jest.fn(() => mockMongoClient)
+    MongoClient: jest.fn(() => mockMongoClient),
+    ServerApiVersion: {
+        v1: '1'
+    }
 };

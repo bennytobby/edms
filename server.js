@@ -372,4 +372,10 @@ app.post("/upload", upload.single("document"), async (req, res) => {
     }
 });
 
-app.listen(portNumber);
+// Export the app for testing
+module.exports = app;
+
+// Only start the server if this file is run directly (not imported)
+if (require.main === module) {
+    app.listen(portNumber);
+}
