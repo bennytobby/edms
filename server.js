@@ -14,7 +14,6 @@ const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 
 /* AWS Connection */
 const AWS = require('aws-sdk');
-const fs = require('fs');
 const s3 = new AWS.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -31,11 +30,10 @@ console.log(`EDMS Server started on port ${portNumber}`);
 
 /* All express */
 const express = require("express");
-const bodyParser = require("body-parser");
 const nodemailer = require('nodemailer');
 const app = express();
 app.use(express.static(__dirname));
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 app.set("views", path.resolve(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use("/styles", express.static(path.join(__dirname, "styles")));
