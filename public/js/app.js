@@ -9,101 +9,46 @@ document.addEventListener('DOMContentLoaded', function () {
     initAnalytics();
 });
 
-// Vercel Analytics Integration
+// Vercel Analytics
 function initAnalytics() {
     // Track page views
-    if (typeof window.va === 'function') {
-        window.va('track', 'page_view', {
-            page: window.location.pathname,
-            title: document.title
-        });
+    if (window.va) {
+        window.va('track', 'page_view');
     }
-
-    // Track form submissions
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        form.addEventListener('submit', function() {
-            if (typeof window.va === 'function') {
-                const formName = this.getAttribute('action') || 'unknown_form';
-                window.va('track', 'form_submit', {
-                    form_name: formName,
-                    page: window.location.pathname
-                });
-            }
-        });
-    });
-
+    
     // Track file uploads
     const fileInputs = document.querySelectorAll('input[type="file"]');
     fileInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            if (this.files.length > 0 && typeof window.va === 'function') {
+        input.addEventListener('change', function () {
+            if (this.files.length > 0 && window.va) {
                 window.va('track', 'file_upload', {
-                    file_count: this.files.length,
-                    page: window.location.pathname
+                    file_type: this.files[0].type,
+                    file_size: this.files[0].size
                 });
             }
         });
     });
-
+    
+    // Track form submissions
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function () {
+            if (window.va) {
+                const formName = form.id || form.className || 'unknown_form';
+                window.va('track', 'form_submit', {
+                    form_name: formName
+                });
+            }
+        });
+    });
+    
     // Track file downloads
     const downloadLinks = document.querySelectorAll('a[href*="/download/"]');
     downloadLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (typeof window.va === 'function') {
-                const fileName = this.getAttribute('href').split('/').pop();
+        link.addEventListener('click', function () {
+            if (window.va) {
                 window.va('track', 'file_download', {
-                    file_name: fileName,
-                    page: window.location.pathname
-                });
-            }
-        });
-    });
-
-    // Track file deletions
-    const deleteLinks = document.querySelectorAll('a[href*="/delete/"]');
-    deleteLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (typeof window.va === 'function') {
-                const fileName = this.getAttribute('href').split('/').pop();
-                window.va('track', 'file_delete', {
-                    file_name: fileName,
-                    page: window.location.pathname
-                });
-            }
-        });
-    });
-
-    // Track user authentication
-    const loginForm = document.querySelector('form[action="/loginSubmit"]');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function() {
-            if (typeof window.va === 'function') {
-                window.va('track', 'user_login', {
-                    page: window.location.pathname
-                });
-            }
-        });
-    }
-
-    const registerForm = document.querySelector('form[action="/registerSubmit"]');
-    if (registerForm) {
-        registerForm.addEventListener('submit', function() {
-            if (typeof window.va === 'function') {
-                window.va('track', 'user_register', {
-                    page: window.location.pathname
-                });
-            }
-        });
-    }
-
-    // Track logout
-    const logoutLinks = document.querySelectorAll('a[href="/logout"]');
-    logoutLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (typeof window.va === 'function') {
-                window.va('track', 'user_logout', {
-                    page: window.location.pathname
+                    file_name: this.textContent.trim()
                 });
             }
         });
