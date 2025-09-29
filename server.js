@@ -39,22 +39,37 @@ app.set("view engine", "ejs");
 app.use("/styles", express.static(path.join(__dirname, "styles")));
 
 
-/* Session Handling */
+/* Session Handling - JWT-based for Vercel */
 const session = require("express-session");
+const jwt = require('jsonwebtoken');
+
+// Simple in-memory session for Vercel (will be replaced with JWT)
 app.use(session({
     secret: process.env.SECRET_KEY,
-    resave: true, // Changed to true for Vercel
-    saveUninitialized: true, // Changed to true for Vercel
-    rolling: true, // Reset expiration on each request
-    name: 'edms.sid', // Custom session name
-    cookie: { 
-        secure: process.env.NODE_ENV === 'production', // true in production (Vercel)
+    resave: true,
+    saveUninitialized: true,
+    rolling: true,
+    name: 'edms.sid',
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: 'lax', // Important for Vercel
-        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
+        sameSite: 'lax'
     }
 }));
+
+// JWT helper functions
+function createToken(user) {
+    return jwt.sign(user, process.env.SECRET_KEY, { expiresIn: '24h' });
+}
+
+function verifyToken(token) {
+    try {
+        return jwt.verify(token, process.env.SECRET_KEY);
+    } catch (err) {
+        return null;
+    }
+}
 
 // Session validation middleware
 app.use((req, res, next) => {
@@ -63,17 +78,27 @@ app.use((req, res, next) => {
     if (publicRoutes.includes(req.path)) {
         return next();
     }
-    
-    // Debug session for all protected routes
-    console.log(`Accessing ${req.path} - Session user:`, req.session.user);
-    console.log(`Session ID: ${req.sessionID}, Session exists: ${!!req.session.user}`);
-    
-    // For protected routes, ensure session exists
+
+    // Check both session and JWT token
+    const sessionUser = req.session.user;
+    const authToken = req.cookies.authToken;
+    const jwtUser = authToken ? verifyToken(authToken) : null;
+
+    console.log(`Accessing ${req.path} - Session user:`, sessionUser);
+    console.log(`JWT user:`, jwtUser);
+
+    // If either session or JWT token is valid, restore the user
+    if (jwtUser && !sessionUser) {
+        console.log('Restoring user from JWT token');
+        req.session.user = jwtUser;
+    }
+
+    // For protected routes, ensure user exists
     if (!req.session.user && req.path !== '/logout') {
-        console.log('Session lost, redirecting to login from:', req.path);
+        console.log('No valid authentication, redirecting to login from:', req.path);
         return res.redirect('/login');
     }
-    
+
     next();
 });
 
@@ -153,8 +178,16 @@ app.get('/dashboard', async (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
+    // Clear JWT token cookie
+    res.clearCookie('authToken');
+
+    // Destroy session
     req.session.destroy(err => {
-        if (err) return res.status(500).send("Could not log out.");
+        if (err) {
+            console.error('Logout error:', err);
+            return res.status(500).send("Could not log out.");
+        }
+        console.log('User logged out successfully');
         res.redirect('/');
     });
 });
@@ -337,21 +370,24 @@ app.post('/loginSubmit', async function (req, res) {
         }
 
         const { firstname, lastname, userid, email, phone } = result;
-        req.session.user = { firstname, lastname, userid, email, phone };
+        const userData = { firstname, lastname, userid, email, phone };
 
-        // Debug logging for Vercel
-        console.log('Login successful for user:', userid);
-        console.log('Session after login:', req.session.user);
+        // Create JWT token for Vercel
+        const token = createToken(userData);
 
-        // Save session explicitly for Vercel
-        req.session.save((err) => {
-            if (err) {
-                console.error('Session save error:', err);
-                return res.status(500).send("Session error. Please try again.");
-            }
-            console.log('Session saved successfully');
-            return res.redirect('/dashboard');
+        // Set both session and JWT token for compatibility
+        req.session.user = userData;
+        res.cookie('authToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+            sameSite: 'lax'
         });
+
+        console.log('Login successful for user:', userid);
+        console.log('JWT token created, redirecting to dashboard');
+
+        return res.redirect('/dashboard');
     } catch (e) {
         console.error(e);
         return res.status(500).send("Server error. Try again later.");
