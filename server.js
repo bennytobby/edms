@@ -46,11 +46,13 @@ app.use(session({
     resave: true, // Changed to true for Vercel
     saveUninitialized: true, // Changed to true for Vercel
     rolling: true, // Reset expiration on each request
-    cookie: {
+    name: 'edms.sid', // Custom session name
+    cookie: { 
         secure: process.env.NODE_ENV === 'production', // true in production (Vercel)
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: 'lax' // Important for Vercel
+        sameSite: 'lax', // Important for Vercel
+        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
     }
 }));
 
@@ -61,13 +63,17 @@ app.use((req, res, next) => {
     if (publicRoutes.includes(req.path)) {
         return next();
     }
-
+    
+    // Debug session for all protected routes
+    console.log(`Accessing ${req.path} - Session user:`, req.session.user);
+    console.log(`Session ID: ${req.sessionID}, Session exists: ${!!req.session.user}`);
+    
     // For protected routes, ensure session exists
     if (!req.session.user && req.path !== '/logout') {
         console.log('Session lost, redirecting to login from:', req.path);
         return res.redirect('/login');
     }
-
+    
     next();
 });
 
@@ -103,7 +109,14 @@ app.get('/login', function (req, res) {
 });
 
 app.get('/dashboard', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
+    // Debug session for Vercel
+    console.log('Dashboard access - Session user:', req.session.user);
+    console.log('Session ID:', req.sessionID);
+
+    if (!req.session.user) {
+        console.log('No session user found, redirecting to login');
+        return res.redirect('/login');
+    }
 
     const searchTerm = req.query.search?.trim().toLowerCase();
     const searchFilter = searchTerm
@@ -325,7 +338,20 @@ app.post('/loginSubmit', async function (req, res) {
 
         const { firstname, lastname, userid, email, phone } = result;
         req.session.user = { firstname, lastname, userid, email, phone };
-        return res.redirect('/dashboard');
+
+        // Debug logging for Vercel
+        console.log('Login successful for user:', userid);
+        console.log('Session after login:', req.session.user);
+
+        // Save session explicitly for Vercel
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+                return res.status(500).send("Session error. Please try again.");
+            }
+            console.log('Session saved successfully');
+            return res.redirect('/dashboard');
+        });
     } catch (e) {
         console.error(e);
         return res.status(500).send("Server error. Try again later.");
