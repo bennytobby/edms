@@ -257,14 +257,7 @@ function showFileInfo(file, input) {
 function initSearchEnhancements() {
     const searchInput = document.querySelector('input[name="search"]');
     if (searchInput) {
-        // Add search icon
-        const searchContainer = searchInput.parentNode;
-        searchContainer.style.position = 'relative';
-
-        const searchIcon = document.createElement('span');
-        searchIcon.innerHTML = '🔍';
-        searchIcon.className = 'search-icon';
-        searchContainer.appendChild(searchIcon);
+        // No need to add search icon via JavaScript - using CSS pseudo-element instead
 
         // Clear search functionality
         const clearBtn = document.createElement('button');
