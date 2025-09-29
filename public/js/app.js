@@ -181,54 +181,8 @@ function initLoadingStates() {
         });
     });
 
-    // Add loading state to links that might take time
-    const downloadLinks = document.querySelectorAll('a[href*="/download/"]');
-    downloadLinks.forEach(link => {
-        const originalText = link.textContent;
-
-        link.addEventListener('click', function (e) {
-            // Store original text if not already stored
-            if (!this.dataset.originalText) {
-                this.dataset.originalText = originalText;
-            }
-
-            this.classList.add('loading');
-            this.textContent = 'Downloading...';
-            this.disabled = true;
-
-            // Reset after a reasonable timeout (download should complete by then)
-            const resetTimeout = setTimeout(() => {
-                this.classList.remove('loading');
-                this.textContent = this.dataset.originalText;
-                this.disabled = false;
-            }, 3000); // 3 seconds should be enough for most downloads
-
-            // Also reset when the page regains focus (download completed)
-            const resetOnFocus = () => {
-                clearTimeout(resetTimeout);
-                this.classList.remove('loading');
-                this.textContent = this.dataset.originalText;
-                this.disabled = false;
-                window.removeEventListener('focus', resetOnFocus);
-            };
-
-            // Listen for window focus (user returns to tab after download)
-            window.addEventListener('focus', resetOnFocus);
-
-            // Also reset on visibility change (tab becomes visible)
-            const resetOnVisibility = () => {
-                if (!document.hidden) {
-                    clearTimeout(resetTimeout);
-                    this.classList.remove('loading');
-                    this.textContent = this.dataset.originalText;
-                    this.disabled = false;
-                    document.removeEventListener('visibilitychange', resetOnVisibility);
-                }
-            };
-
-            document.addEventListener('visibilitychange', resetOnVisibility);
-        });
-    });
+    // Download links - no special handling needed
+    // Downloads will work normally without status changes
 }
 
 // File Upload Enhancements
@@ -305,7 +259,6 @@ function initSearchEnhancements() {
     if (searchInput) {
         // Add search icon
         const searchContainer = searchInput.parentNode;
-        searchContainer.style.position = 'relative';
 
         const searchIcon = document.createElement('span');
         searchIcon.innerHTML = '🔍';
