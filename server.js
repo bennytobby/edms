@@ -280,11 +280,33 @@ app.get("/download/:filename", async (req, res) => {
 
     try {
         const data = await s3.getObject(params).promise();
-        res.setHeader("Content-Disposition", `attachment; filename=\"${filename}\"`);
+
+        // Get the original filename from database for proper download name
+        await client.connect();
+        const fileDoc = await client
+            .db(fileCollection.db)
+            .collection(fileCollection.collection)
+            .findOne({ filename: filename });
+
+        let downloadFilename = filename; // Fallback to S3 key
+        if (fileDoc && fileDoc.originalName) {
+            downloadFilename = fileDoc.originalName;
+        }
+
+        // Sanitize filename for Content-Disposition header
+        const sanitizedFilename = downloadFilename
+            .replace(/[^\x20-\x7E]/g, '') // Remove non-ASCII characters
+            .replace(/[\r\n\t]/g, ' ') // Replace control characters with spaces
+            .replace(/"/g, "'") // Replace quotes with single quotes
+            .trim();
+
+        res.setHeader("Content-Disposition", `attachment; filename="${sanitizedFilename}"`);
         res.send(data.Body);
     } catch (err) {
         console.error("S3 download error:", err);
         res.status(500).send("File could not be downloaded.");
+    } finally {
+        await client.close();
     }
 });
 
