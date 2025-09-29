@@ -1,8 +1,12 @@
 const request = require('supertest');
 
-// Mock MongoDB and AWS before importing the app
+// Mock MongoDB, AWS, and bcrypt before importing the app
 jest.mock('mongodb', () => require('../mocks/mongodb.mock'));
 jest.mock('aws-sdk', () => require('../mocks/aws-s3.mock'));
+jest.mock('bcrypt', () => ({
+    compare: jest.fn().mockResolvedValue(true),
+    hash: jest.fn().mockResolvedValue('hashed-password')
+}));
 
 const app = require('../../server'); // Import the app
 
