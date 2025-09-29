@@ -90,18 +90,17 @@ app.use((req, res, next) => {
     const authToken = req.cookies ? req.cookies.authToken : null;
     const jwtUser = authToken ? verifyToken(authToken) : null;
 
-    console.log(`Accessing ${req.path} - Session user:`, sessionUser);
-    console.log(`JWT user:`, jwtUser);
+    // Authentication middleware - session and JWT validation
 
     // If either session or JWT token is valid, restore the user
     if (jwtUser && !sessionUser) {
-        console.log('Restoring user from JWT token');
+        // Restoring user from JWT token
         req.session.user = jwtUser;
     }
 
     // For protected routes, ensure user exists
     if (!req.session.user && req.path !== '/logout') {
-        console.log('No valid authentication, redirecting to login from:', req.path);
+        // No valid authentication, redirecting to login
         return res.redirect('/login');
     }
 
@@ -145,12 +144,10 @@ app.get('/login', function (req, res) {
 });
 
 app.get('/dashboard', async (req, res) => {
-    // Debug session for Vercel
-    console.log('Dashboard access - Session user:', req.session.user);
-    console.log('Session ID:', req.sessionID);
+    // Dashboard access with session validation
 
     if (!req.session.user) {
-        console.log('No session user found, redirecting to login');
+        // No session user found, redirecting to login
         return res.redirect('/login');
     }
 
@@ -204,12 +201,7 @@ app.get('/dashboard', async (req, res) => {
             .sort(sortObject)
             .toArray();
 
-        console.log('Files loaded for dashboard:', fileDocs.length);
-        console.log('Files with preview buttons:', fileDocs.map(f => ({
-            name: f.originalName,
-            type: f.contentType || f.mimetype || 'unknown',
-            fields: Object.keys(f)
-        })));
+        // Files loaded for dashboard display
 
         res.render('dashboard', {
             firstname: req.session.user.firstname,
@@ -238,7 +230,7 @@ app.get('/logout', (req, res) => {
             console.error('Logout error:', err);
             return res.status(500).send("Could not log out.");
         }
-        console.log('User logged out successfully');
+        // User logged out successfully
         res.redirect('/');
     });
 });
@@ -265,7 +257,7 @@ app.get("/delete/:filename", async (req, res) => {
         };
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) console.error("Error sending deletion email:", err);
-            else console.log("Deletion email sent:", info.response);
+            else console.log("Deletion email sent successfully");
         });
 
         res.redirect("/dashboard");
@@ -371,7 +363,7 @@ app.post('/registerSubmit', async function (req, res) {
         };
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) console.error("Error sending welcome email:", err);
-            else console.log("Welcome email sent:", info.response);
+            else console.log("Welcome email sent successfully");
         });
 
         return res.render('success', {
@@ -437,8 +429,7 @@ app.post('/loginSubmit', async function (req, res) {
             sameSite: 'lax'
         });
 
-        console.log('Login successful for user:', userid);
-        console.log('JWT token created, redirecting to dashboard');
+        // Login successful, redirecting to dashboard
 
         return res.redirect('/dashboard');
     } catch (e) {
@@ -509,7 +500,7 @@ app.post("/upload", upload.single("document"), async (req, res) => {
         };
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) console.error("Error sending email:", err);
-            else console.log("Email sent:", info.response);
+            else console.log("Email sent successfully");
         });
 
         res.render('success', {
@@ -649,7 +640,7 @@ app.post('/api/confirm-upload', async (req, res) => {
         };
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) console.error("Error sending email:", err);
-            else console.log("Email sent:", info.response);
+            else console.log("Email sent successfully");
         });
 
         res.json({ success: true, message: 'File uploaded successfully' });
