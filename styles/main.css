@@ -631,10 +631,15 @@ input[type="reset"]:hover {
   grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
+  align-items: start;
 }
 
 .form-group {
   margin-bottom: var(--space-4);
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
 }
 
 .form-label {
@@ -651,8 +656,9 @@ input[type="reset"]:hover {
 
 .file-input-wrapper {
   position: relative;
-  display: inline-block;
+  display: block;
   width: 100%;
+  overflow: hidden;
 }
 
 .file-input {
