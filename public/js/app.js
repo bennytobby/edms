@@ -185,7 +185,7 @@ function initLoadingStates() {
     // Downloads will work normally without status changes
 }
 
-// File Upload Enhancements
+// File Upload Enhancements - Direct S3 Upload
 function initFileUpload() {
     const fileInputs = document.querySelectorAll('input[type="file"]');
 
@@ -225,6 +225,104 @@ function initFileUpload() {
             }
         });
     });
+
+    // Handle form submission for direct S3 uploads
+    const uploadForm = document.querySelector('form[action="/upload"]');
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            handleDirectS3Upload(this);
+        });
+    }
+}
+
+// Direct S3 Upload Handler
+async function handleDirectS3Upload(form) {
+    const fileInput = form.querySelector('input[type="file"]');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        showNotification('Please select a file to upload', 'error');
+        return;
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+
+    try {
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Uploading...';
+        submitBtn.classList.add('loading');
+
+        // Step 1: Get signed URL from server
+        const signedUrlResponse = await fetch('/api/get-signed-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                filename: file.name,
+                contentType: file.type
+            })
+        });
+
+        if (!signedUrlResponse.ok) {
+            throw new Error('Failed to get upload URL');
+        }
+
+        const { signedUrl, s3Key } = await signedUrlResponse.json();
+
+        // Step 2: Upload directly to S3
+        const uploadResponse = await fetch(signedUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Content-Type': file.type
+            }
+        });
+
+        if (!uploadResponse.ok) {
+            throw new Error('Failed to upload to S3');
+        }
+
+        // Step 3: Confirm upload and save metadata
+        const formData = new FormData(form);
+        const confirmResponse = await fetch('/api/confirm-upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                s3Key: s3Key,
+                originalName: file.name,
+                description: form.querySelector('textarea[name="description"]').value,
+                tags: form.querySelector('input[name="tags"]').value,
+                category: form.querySelector('select[name="category"]').value
+            })
+        });
+
+        if (!confirmResponse.ok) {
+            throw new Error('Failed to save file metadata');
+        }
+
+        // Success!
+        showNotification('File uploaded successfully!', 'success');
+
+        // Redirect to dashboard after a short delay
+        setTimeout(() => {
+            window.location.href = '/dashboard';
+        }, 1500);
+
+    } catch (error) {
+        console.error('Upload error:', error);
+        showNotification('Upload failed: ' + error.message, 'error');
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        submitBtn.classList.remove('loading');
+    }
 }
 
 function showFileInfo(file, input) {
@@ -380,6 +478,7 @@ style.textContent = `
     .loading {
         position: relative;
         pointer-events: none;
+        opacity: 0.7;
     }
 
     .loading::after {
@@ -394,6 +493,31 @@ style.textContent = `
         border-top: 2px solid currentColor;
         border-radius: 50%;
         animation: spin 1s linear infinite;
+    }
+
+    .upload-progress {
+        margin-top: var(--space-2);
+        padding: var(--space-2);
+        background: var(--color-background-secondary);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-sm);
+    }
+
+    .upload-progress-bar {
+        width: 100%;
+        height: 4px;
+        background: var(--color-border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        margin-top: var(--space-1);
+    }
+
+    .upload-progress-fill {
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: var(--radius-sm);
+        transition: width 0.3s ease;
+        width: 0%;
     }
 
     @keyframes spin {

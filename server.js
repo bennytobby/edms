@@ -518,6 +518,94 @@ app.post("/upload", upload.single("document"), async (req, res) => {
     }
 });
 
+// API endpoint to generate signed URLs for direct S3 uploads
+app.post('/api/get-signed-url', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const { filename, contentType } = req.body;
+        const s3Key = `${Date.now()}_${filename}`;
+
+        const s3Params = {
+            Bucket: AWS_BUCKET,
+            Key: s3Key,
+            ContentType: contentType,
+            Expires: 300 // 5 minutes
+        };
+
+        const signedUrl = s3.getSignedUrl('putObject', s3Params);
+
+        res.json({
+            signedUrl,
+            s3Key,
+            fields: {
+                key: s3Key,
+                'Content-Type': contentType
+            }
+        });
+    } catch (error) {
+        console.error('Error generating signed URL:', error);
+        res.status(500).json({ error: 'Failed to generate signed URL' });
+    }
+});
+
+// API endpoint to confirm file upload and save metadata
+app.post('/api/confirm-upload', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const { s3Key, originalName, description, tags, category } = req.body;
+
+        // Get file info from S3
+        const s3Object = await s3.headObject({
+            Bucket: AWS_BUCKET,
+            Key: s3Key
+        }).promise();
+
+        const fileMeta = {
+            filename: s3Key,
+            originalName: originalName,
+            s3Url: `https://${AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`,
+            mimetype: s3Object.ContentType,
+            size: s3Object.ContentLength,
+            uploadDate: new Date(),
+            uploadedBy: req.session.user.userid,
+            description: description || "",
+            tags: tags ? tags.split(',').map(tag => tag.trim().toLowerCase()) : [],
+            category: category || 'other'
+        };
+
+        await client.connect();
+        await client
+            .db(fileCollection.db)
+            .collection(fileCollection.collection)
+            .insertOne(fileMeta);
+
+        // Send confirmation email
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: req.session.user.email,
+            subject: "EDMS File Upload Confirmation",
+            text: `Hello ${req.session.user.firstname},\n\nYour file "${originalName}" has been uploaded successfully on ${new Date().toLocaleString()}.\n\n- EDMS Team`
+        };
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) console.error("Error sending email:", err);
+            else console.log("Email sent:", info.response);
+        });
+
+        res.json({ success: true, message: 'File uploaded successfully' });
+    } catch (error) {
+        console.error('Error confirming upload:', error);
+        res.status(500).json({ error: 'Failed to confirm upload' });
+    } finally {
+        await client.close();
+    }
+});
+
 // Error handling middleware for multer file size errors
 app.use((error, req, res, next) => {
     if (error.code === 'LIMIT_FILE_SIZE') {
