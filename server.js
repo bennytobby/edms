@@ -202,7 +202,9 @@ app.get('/dashboard', async (req, res) => {
             firstname: req.session.user.firstname,
             email: req.session.user.email,
             files: fileDocs,
-            search: searchTerm
+            search: searchTerm,
+            category: category,
+            sort: sortBy
         });
     } catch (e) {
         console.error(e);
