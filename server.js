@@ -43,11 +43,33 @@ app.use("/styles", express.static(path.join(__dirname, "styles")));
 const session = require("express-session");
 app.use(session({
     secret: process.env.SECRET_KEY,
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false }
+    resave: true, // Changed to true for Vercel
+    saveUninitialized: true, // Changed to true for Vercel
+    rolling: true, // Reset expiration on each request
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // true in production (Vercel)
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: 'lax' // Important for Vercel
+    }
 }));
 
+// Session validation middleware
+app.use((req, res, next) => {
+    // Skip session validation for public routes
+    const publicRoutes = ['/', '/login', '/register', '/loginSubmit', '/registerSubmit'];
+    if (publicRoutes.includes(req.path)) {
+        return next();
+    }
+
+    // For protected routes, ensure session exists
+    if (!req.session.user && req.path !== '/logout') {
+        console.log('Session lost, redirecting to login from:', req.path);
+        return res.redirect('/login');
+    }
+
+    next();
+});
 
 /* Email Handling */
 const transporter = nodemailer.createTransport({
