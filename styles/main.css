@@ -824,8 +824,8 @@ input[type="reset"]:hover {
 }
 
 .role-contributor {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--primary-600);
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
 }
 
 .role-viewer {
