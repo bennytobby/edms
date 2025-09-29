@@ -31,9 +31,11 @@ console.log(`EDMS Server started on port ${portNumber}`);
 /* All express */
 const express = require("express");
 const nodemailer = require('nodemailer');
+const cookieParser = require('cookie-parser');
 const app = express();
 app.use(express.static(__dirname));
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser()); // Add cookie parser middleware
 app.set("views", path.resolve(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use("/styles", express.static(path.join(__dirname, "styles")));
@@ -81,7 +83,7 @@ app.use((req, res, next) => {
 
     // Check both session and JWT token
     const sessionUser = req.session.user;
-    const authToken = req.cookies.authToken;
+    const authToken = req.cookies ? req.cookies.authToken : null;
     const jwtUser = authToken ? verifyToken(authToken) : null;
 
     console.log(`Accessing ${req.path} - Session user:`, sessionUser);
