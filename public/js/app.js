@@ -570,7 +570,7 @@ function openPreview(filename, filetype) {
     }
 
     title.textContent = `Preview: ${filename}`;
-    downloadLink.href = `/download/${filename}`;
+    downloadLink.href = `/download/${encodeURIComponent(filename)}`;
     downloadLink.target = '_blank'; // Open in new tab to prevent auto-download
 
     // Show loading state
@@ -597,7 +597,7 @@ function openPreview(filename, filetype) {
 
 function previewImage(filename, content) {
     const img = document.createElement('img');
-    img.src = `/download/${filename}`;
+    img.src = `/download/${encodeURIComponent(filename)}`;
     img.style.maxWidth = '100%';
     img.style.maxHeight = '70vh';
     img.style.objectFit = 'contain';
@@ -616,13 +616,13 @@ function previewPDF(filename, content) {
         <div class="preview-unsupported">
             <p>PDF preview is not available in this browser.</p>
             <p>Please download the file to view it.</p>
-            <a href="/download/${filename}" class="button primary" style="margin-top: 1rem; display: inline-block;">Download PDF</a>
+            <a href="/download/${encodeURIComponent(filename)}" class="button primary" style="margin-top: 1rem; display: inline-block;">Download PDF</a>
         </div>
     `;
 }
 
 function previewText(filename, content) {
-    fetch(`/download/${filename}`)
+    fetch(`/download/${encodeURIComponent(filename)}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);

@@ -237,7 +237,9 @@ app.get('/logout', (req, res) => {
 
 app.get("/delete/:filename", async (req, res) => {
     if (!req.session.user) return res.redirect("/login");
-    const filename = req.params.filename;
+
+    // Decode the filename to handle URL encoding
+    const filename = decodeURIComponent(req.params.filename);
 
     try {
         await client.connect();
@@ -271,7 +273,9 @@ app.get("/delete/:filename", async (req, res) => {
 
 app.get("/download/:filename", async (req, res) => {
     if (!req.session.user) return res.redirect("/login");
-    const filename = req.params.filename;
+
+    // Decode the filename to handle URL encoding
+    const filename = decodeURIComponent(req.params.filename);
     const params = { Bucket: AWS_BUCKET, Key: filename };
 
     try {

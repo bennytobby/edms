@@ -103,9 +103,9 @@
 
             <div class="file-actions">
               <button class="button secondary preview-btn" data-filename="<%= file.filename %>" data-filetype="<%= file.mimetype %>">Preview</button>
-              <a href="/download/<%= file.filename %>" class="button primary">Download</a>
+              <a href="/download/<%= encodeURIComponent(file.filename) %>" class="button primary">Download</a>
               <% if (user.role === 'admin' || (user.role === 'contributor' && file.uploadedBy === user.userid)) { %>
-                <a href="/delete/<%= file.filename %>" class="button danger"
+                <a href="/delete/<%= encodeURIComponent(file.filename) %>" class="button danger"
                    onclick="return confirm('Are you sure you want to delete this file?')">Delete</a>
               <% } else { %>
                 <button class="button danger disabled"
