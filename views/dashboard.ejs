@@ -36,7 +36,7 @@
             <option value="spreadsheets" <%= (category === 'spreadsheets') ? 'selected' : '' %>>Spreadsheets</option>
             <option value="archives" <%= (category === 'archives') ? 'selected' : '' %>>Archives</option>
           </select>
-          
+
           <select name="sort" class="filter-select" onchange="this.form.submit()">
             <option value="newest" <%= (sort === 'newest') ? 'selected' : '' %>>Newest First</option>
             <option value="oldest" <%= (sort === 'oldest') ? 'selected' : '' %>>Oldest First</option>
@@ -44,7 +44,7 @@
             <option value="size" <%= (sort === 'size') ? 'selected' : '' %>>Size</option>
             <option value="uploader" <%= (sort === 'uploader') ? 'selected' : '' %>>Uploader</option>
           </select>
-          
+
           <!-- Preserve search term -->
           <input type="hidden" name="search" value="<%= search || '' %>">
         </form>
@@ -116,7 +116,7 @@
           <h3>Upload a New File</h3>
           <p>Add documents to your EDMS library with proper categorization</p>
         </div>
-        
+
         <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form">
           <div class="form-row">
             <div class="form-group">
