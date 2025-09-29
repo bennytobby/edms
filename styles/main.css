@@ -519,11 +519,24 @@ input[type="reset"]:hover {
 
 .search-bar input[type="text"] {
   flex: 1;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-3) 40px;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   font-size: var(--font-size-base);
   background: var(--color-background);
+  position: relative;
+}
+
+/* Search icon styling */
+.search-icon {
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+  opacity: 0.6 !important;
+  font-size: 16px !important;
+  z-index: 1 !important;
 }
 
 .search-bar button {

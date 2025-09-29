@@ -269,15 +269,7 @@ function initSearchEnhancements() {
 
         const searchIcon = document.createElement('span');
         searchIcon.innerHTML = '🔍';
-        searchIcon.style.position = 'absolute';
-        searchIcon.style.left = '12px';
-        searchIcon.style.top = '50%';
-        searchIcon.style.transform = 'translateY(-50%)';
-        searchIcon.style.pointerEvents = 'none';
-        searchIcon.style.opacity = '0.6';
-        searchIcon.style.fontSize = '16px';
-
-        searchInput.style.paddingLeft = '40px';
+        searchIcon.className = 'search-icon';
         searchContainer.appendChild(searchIcon);
 
         // Clear search functionality
