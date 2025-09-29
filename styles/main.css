@@ -531,6 +531,7 @@ input[type="reset"]:hover {
   border-radius: var(--radius-lg);
   font-size: var(--font-size-base);
   background: var(--color-background);
+  position: relative;
 }
 
 /* Search icon styling */
@@ -542,8 +543,9 @@ input[type="reset"]:hover {
   pointer-events: none !important;
   opacity: 0.6 !important;
   font-size: 16px !important;
-  z-index: 2 !important;
+  z-index: 10 !important;
   color: var(--color-text-secondary) !important;
+  line-height: 1 !important;
 }
 
 .search-bar button {

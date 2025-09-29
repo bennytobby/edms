@@ -259,6 +259,7 @@ function initSearchEnhancements() {
     if (searchInput) {
         // Add search icon
         const searchContainer = searchInput.parentNode;
+        searchContainer.style.position = 'relative';
 
         const searchIcon = document.createElement('span');
         searchIcon.innerHTML = '🔍';
