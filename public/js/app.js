@@ -256,6 +256,7 @@ async function handleDirectS3Upload(form) {
         submitBtn.classList.add('loading');
 
         // Step 1: Get signed URL from server
+        console.log('Getting signed URL for:', file.name, file.type);
         const signedUrlResponse = await fetch('/api/get-signed-url', {
             method: 'POST',
             headers: {
@@ -267,11 +268,16 @@ async function handleDirectS3Upload(form) {
             })
         });
 
+        console.log('Signed URL response status:', signedUrlResponse.status);
+
         if (!signedUrlResponse.ok) {
-            throw new Error('Failed to get upload URL');
+            const errorText = await signedUrlResponse.text();
+            console.error('Signed URL error:', errorText);
+            throw new Error('Failed to get upload URL: ' + errorText);
         }
 
         const { signedUrl, s3Key } = await signedUrlResponse.json();
+        console.log('Got signed URL, uploading to S3...');
 
         // Step 2: Upload directly to S3
         const uploadResponse = await fetch(signedUrl, {
@@ -282,8 +288,12 @@ async function handleDirectS3Upload(form) {
             }
         });
 
+        console.log('S3 upload response status:', uploadResponse.status);
+
         if (!uploadResponse.ok) {
-            throw new Error('Failed to upload to S3');
+            const errorText = await uploadResponse.text();
+            console.error('S3 upload error:', errorText);
+            throw new Error('Failed to upload to S3: ' + errorText);
         }
 
         // Step 3: Confirm upload and save metadata

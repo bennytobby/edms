@@ -34,6 +34,7 @@ const nodemailer = require('nodemailer');
 const cookieParser = require('cookie-parser');
 const app = express();
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json()); // Add JSON parser for API endpoints
 app.use(cookieParser()); // Add cookie parser middleware
 app.set("views", path.resolve(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -520,12 +521,22 @@ app.post("/upload", upload.single("document"), async (req, res) => {
 
 // API endpoint to generate signed URLs for direct S3 uploads
 app.post('/api/get-signed-url', async (req, res) => {
+    console.log('API: get-signed-url called');
+    console.log('Session user:', req.session.user);
+    console.log('Request body:', req.body);
+
     if (!req.session.user) {
+        console.log('No session user found');
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
     try {
         const { filename, contentType } = req.body;
+
+        if (!filename || !contentType) {
+            return res.status(400).json({ error: 'Missing filename or contentType' });
+        }
+
         const s3Key = `${Date.now()}_${filename}`;
 
         const s3Params = {
@@ -535,7 +546,9 @@ app.post('/api/get-signed-url', async (req, res) => {
             Expires: 300 // 5 minutes
         };
 
+        console.log('S3 params:', s3Params);
         const signedUrl = s3.getSignedUrl('putObject', s3Params);
+        console.log('Generated signed URL');
 
         res.json({
             signedUrl,
@@ -547,13 +560,18 @@ app.post('/api/get-signed-url', async (req, res) => {
         });
     } catch (error) {
         console.error('Error generating signed URL:', error);
-        res.status(500).json({ error: 'Failed to generate signed URL' });
+        res.status(500).json({ error: 'Failed to generate signed URL: ' + error.message });
     }
 });
 
 // API endpoint to confirm file upload and save metadata
 app.post('/api/confirm-upload', async (req, res) => {
+    console.log('API: confirm-upload called');
+    console.log('Session user:', req.session.user);
+    console.log('Request body:', req.body);
+
     if (!req.session.user) {
+        console.log('No session user found');
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
