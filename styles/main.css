@@ -651,6 +651,8 @@ input[type="reset"]:hover {
 
 .file-input-wrapper {
   position: relative;
+  display: inline-block;
+  width: 100%;
 }
 
 .file-input {
@@ -659,6 +661,7 @@ input[type="reset"]:hover {
   width: 100%;
   height: 100%;
   cursor: pointer;
+  z-index: 1;
 }
 
 .file-input-label {
@@ -673,6 +676,8 @@ input[type="reset"]:hover {
   cursor: pointer;
   transition: all var(--transition-fast);
   min-height: 48px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .file-input-label:hover {
