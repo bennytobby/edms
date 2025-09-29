@@ -280,6 +280,7 @@ async function handleDirectS3Upload(form) {
         console.log('Got signed URL, uploading to S3...');
 
         // Step 2: Upload directly to S3
+        console.log('Attempting direct S3 upload to:', signedUrl);
         const uploadResponse = await fetch(signedUrl, {
             method: 'PUT',
             body: file,
@@ -289,15 +290,19 @@ async function handleDirectS3Upload(form) {
         });
 
         console.log('S3 upload response status:', uploadResponse.status);
+        console.log('S3 upload response headers:', [...uploadResponse.headers.entries()]);
 
         if (!uploadResponse.ok) {
             const errorText = await uploadResponse.text();
             console.error('S3 upload error:', errorText);
+            console.error('Full response:', uploadResponse);
             throw new Error('Failed to upload to S3: ' + errorText);
         }
 
+        console.log('S3 upload successful!');
+
         // Step 3: Confirm upload and save metadata
-        const formData = new FormData(form);
+        console.log('Confirming upload with metadata...');
         const confirmResponse = await fetch('/api/confirm-upload', {
             method: 'POST',
             headers: {
@@ -311,6 +316,8 @@ async function handleDirectS3Upload(form) {
                 category: form.querySelector('select[name="category"]').value
             })
         });
+
+        console.log('Confirm upload response status:', confirmResponse.status);
 
         if (!confirmResponse.ok) {
             throw new Error('Failed to save file metadata');
