@@ -102,6 +102,7 @@
             <% } %>
 
             <div class="file-actions">
+              <button class="button secondary preview-btn" data-filename="<%= file.filename %>" data-filetype="<%= file.mimetype %>">Preview</button>
               <a href="/download/<%= file.filename %>" class="button primary">Download</a>
               <% if (user.role === 'admin' || (user.role === 'contributor' && file.uploadedBy === user.userid)) { %>
                 <a href="/delete/<%= file.filename %>" class="button danger"
@@ -204,6 +205,25 @@
       <p>&copy; <%= new Date().getFullYear() %> Paramraj Singh Machre</p>
     </footer>
 
+    <!-- Preview Modal -->
+    <div id="previewModal" class="preview-modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="previewTitle">File Preview</h3>
+          <button class="modal-close" onclick="closePreview()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="previewContent">
+            <!-- Preview content will be loaded here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="button secondary" onclick="closePreview()">Close</button>
+          <a id="previewDownload" href="#" class="button primary">Download</a>
+        </div>
+      </div>
+    </div>
+
     <script src="/js/app.js"></script>
     <script>
       // Dashboard Client-Side Filtering
@@ -269,6 +289,7 @@
           fileGrid.appendChild(card);
         });
       }
+
     </script>
   </body>
 </html>

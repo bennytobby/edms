@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initSearchEnhancements();
     initAnimations();
     initAnalytics();
+    initPreviewButtons();
 });
 
 // Vercel Analytics
@@ -382,7 +383,7 @@ function initSearchEnhancements() {
             clearBtn.style.display = this.value ? 'block' : 'none';
         });
 
-        searchContainer.appendChild(clearBtn);
+        searchInput.parentNode.appendChild(clearBtn);
     }
 }
 
@@ -526,4 +527,140 @@ style.textContent = `
         100% { transform: rotate(360deg); }
     }
 `;
-document.head.appendChild(style);
+
+// File Preview Functionality
+function initPreviewButtons() {
+    console.log('Initializing preview functionality...');
+
+    // Use event delegation to handle dynamically added buttons
+    document.addEventListener('click', function (e) {
+        console.log('Click detected on:', e.target, 'Classes:', e.target.classList);
+        if (e.target.classList.contains('preview-btn')) {
+            e.preventDefault();
+            const filename = e.target.dataset.filename;
+            const filetype = e.target.dataset.filetype;
+            console.log('Preview clicked:', filename, filetype);
+            openPreview(filename, filetype);
+        }
+    });
+
+    // Check if preview buttons exist on page load
+    setTimeout(() => {
+        const previewButtons = document.querySelectorAll('.preview-btn');
+        console.log('Preview buttons found on page:', previewButtons.length);
+        previewButtons.forEach((btn, index) => {
+            console.log(`Button ${index}:`, btn.dataset.filename, btn.dataset.filetype);
+        });
+    }, 1000);
+}
+
+function openPreview(filename, filetype) {
+    console.log('Opening preview for:', filename, filetype);
+
+    const modal = document.getElementById('previewModal');
+    const title = document.getElementById('previewTitle');
+    const content = document.getElementById('previewContent');
+    const downloadLink = document.getElementById('previewDownload');
+
+    console.log('Modal elements found:', { modal: !!modal, title: !!title, content: !!content, downloadLink: !!downloadLink });
+
+    if (!modal || !title || !content || !downloadLink) {
+        alert('Preview modal not found. Please refresh the page.');
+        return;
+    }
+
+    title.textContent = `Preview: ${filename}`;
+    downloadLink.href = `/download/${filename}`;
+    downloadLink.target = '_blank'; // Open in new tab to prevent auto-download
+
+    // Show loading state
+    content.innerHTML = '<div class="loading">Loading preview...</div>';
+    modal.style.display = 'block';
+
+    // Determine preview method based on file type
+    if (filetype.startsWith('image/')) {
+        previewImage(filename, content);
+    } else if (filetype === 'application/pdf') {
+        previewPDF(filename, content);
+    } else if (filetype.startsWith('text/')) {
+        previewText(filename, content);
+    } else {
+        content.innerHTML = `
+            <div class="preview-unsupported">
+                <p>Preview not available for this file type.</p>
+                <p>File type: ${filetype}</p>
+                <p>Please download the file to view it.</p>
+            </div>
+        `;
+    }
+}
+
+function previewImage(filename, content) {
+    const img = document.createElement('img');
+    img.src = `/download/${filename}`;
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '70vh';
+    img.style.objectFit = 'contain';
+    img.onload = () => {
+        content.innerHTML = '';
+        content.appendChild(img);
+    };
+    img.onerror = () => {
+        content.innerHTML = '<div class="preview-error">Failed to load image preview</div>';
+    };
+}
+
+function previewPDF(filename, content) {
+    // For PDFs, show a message and download link instead of iframe
+    content.innerHTML = `
+        <div class="preview-unsupported">
+            <p>PDF preview is not available in this browser.</p>
+            <p>Please download the file to view it.</p>
+            <a href="/download/${filename}" class="button primary" style="margin-top: 1rem; display: inline-block;">Download PDF</a>
+        </div>
+    `;
+}
+
+function previewText(filename, content) {
+    fetch(`/download/${filename}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.text();
+        })
+        .then(text => {
+            const pre = document.createElement('pre');
+            pre.textContent = text;
+            pre.style.whiteSpace = 'pre-wrap';
+            pre.style.maxHeight = '70vh';
+            pre.style.overflow = 'auto';
+            pre.style.backgroundColor = '#f5f5f5';
+            pre.style.padding = '1rem';
+            pre.style.borderRadius = '4px';
+            content.innerHTML = '';
+            content.appendChild(pre);
+        })
+        .catch(error => {
+            content.innerHTML = `<div class="preview-error">Failed to load text preview: ${error.message}</div>`;
+        });
+}
+
+function closePreview() {
+    const modal = document.getElementById('previewModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function (event) {
+    const modal = document.getElementById('previewModal');
+    if (modal && event.target === modal) {
+        closePreview();
+    }
+});
+
+// Make functions globally available
+window.closePreview = closePreview;
+window.openPreview = openPreview;

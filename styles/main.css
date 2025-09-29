@@ -205,6 +205,9 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
+  width: 100%;
+  min-height: 60px;
+  flex-wrap: nowrap;
 }
 
 .topbar h2 {
@@ -212,13 +215,17 @@ a:hover {
   font-weight: var(--font-weight-bold);
   margin: 0;
   color: white;
+  flex-shrink: 0;
 }
 
-.user-info {
+.topbar .user-info {
   font-size: var(--font-size-sm);
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .logout-btn {
@@ -1363,12 +1370,12 @@ footer {
   font-size: var(--font-size-lg);
 }
 
-.user-info {
+.user-card .user-info {
   flex: 1;
   min-width: 0; /* Allow flex item to shrink */
 }
 
-.user-info h3 {
+.user-card .user-info h3 {
   margin: 0 0 var(--space-1) 0;
   color: var(--color-text);
   font-size: var(--font-size-lg);
@@ -1493,7 +1500,7 @@ footer {
   justify-content: center;
 }
 
-.modal-content {
+#confirmModal .modal-content {
   background: var(--color-background);
   border-radius: var(--radius-xl);
   padding: var(--space-8);
@@ -1503,12 +1510,12 @@ footer {
   text-align: center;
 }
 
-.modal-content h3 {
+#confirmModal .modal-content h3 {
   margin-bottom: var(--space-4);
   color: var(--color-text);
 }
 
-.modal-content p {
+#confirmModal .modal-content p {
   margin-bottom: var(--space-6);
   color: var(--color-text-light);
   line-height: var(--line-height-relaxed);
@@ -1585,4 +1592,128 @@ footer {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Preview Modal Styles */
+.preview-modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 60px; /* Start below the header */
+  width: 100vw;
+  height: calc(100vh - 60px); /* Full height minus header */
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background: var(--color-background);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 100px); /* Account for header + padding */
+  width: auto;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin: auto;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-light);
+  cursor: pointer;
+  padding: var(--space-1);
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: var(--color-text);
+}
+
+.modal-body {
+  padding: var(--space-6);
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: calc(100vh - 200px); /* Leave room for header and footer */
+}
+
+.modal-body img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.preview-unsupported,
+.preview-error,
+.loading {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-light);
+  position: relative;
+  z-index: 1001;
+}
+
+.preview-unsupported p,
+.preview-error p {
+  margin: var(--space-2) 0;
+}
+
+.loading {
+  font-style: italic;
+}
+
+/* Preview Button Styles */
+.preview-btn {
+  background: var(--color-secondary);
+  color: white;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.preview-btn:hover {
+  background: var(--color-secondary-dark);
+  transform: translateY(-1px);
 }

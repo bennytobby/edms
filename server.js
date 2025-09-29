@@ -204,6 +204,13 @@ app.get('/dashboard', async (req, res) => {
             .sort(sortObject)
             .toArray();
 
+        console.log('Files loaded for dashboard:', fileDocs.length);
+        console.log('Files with preview buttons:', fileDocs.map(f => ({
+            name: f.originalName,
+            type: f.contentType || f.mimetype || 'unknown',
+            fields: Object.keys(f)
+        })));
+
         res.render('dashboard', {
             firstname: req.session.user.firstname,
             email: req.session.user.email,
@@ -540,7 +547,7 @@ app.get('/admin', async (req, res) => {
             .db(userCollection.db)
             .collection(userCollection.collection)
             .find({}, { projection: { pass: 0 } }) // Exclude password field
-            .sort({ createdAt: -1 })
+            .sort({ _id: -1 }) // Sort by creation order (newest first)
             .toArray();
 
         res.render('admin', {
