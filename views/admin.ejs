@@ -23,24 +23,24 @@
         <p>Manage user accounts, roles, and permissions</p>
       </div>
 
-      <div class="admin-stats">
-        <div class="stat-card">
-          <h3><%= users.length %></h3>
-          <p>Total Users</p>
+        <div class="admin-stats">
+          <div class="stat-card">
+            <h3 id="totalUsers"><%= users.length %></h3>
+            <p>Total Users</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="adminCount"><%= users.filter(u => u.role === 'admin').length %></h3>
+            <p>Admins</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="contributorCount"><%= users.filter(u => u.role === 'contributor').length %></h3>
+            <p>Contributors</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="viewerCount"><%= users.filter(u => u.role === 'viewer').length %></h3>
+            <p>Viewers</p>
+          </div>
         </div>
-        <div class="stat-card">
-          <h3><%= users.filter(u => u.role === 'admin').length %></h3>
-          <p>Admins</p>
-        </div>
-        <div class="stat-card">
-          <h3><%= users.filter(u => u.role === 'contributor').length %></h3>
-          <p>Contributors</p>
-        </div>
-        <div class="stat-card">
-          <h3><%= users.filter(u => u.role === 'viewer').length %></h3>
-          <p>Viewers</p>
-        </div>
-      </div>
 
       <section class="users-section">
         <div class="section-header">
@@ -53,20 +53,28 @@
               <option value="contributor">Contributors</option>
               <option value="viewer">Viewers</option>
             </select>
+            <select id="sortFilter" class="filter-select">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="name">Name A-Z</option>
+              <option value="name-desc">Name Z-A</option>
+              <option value="role">Role</option>
+              <option value="email">Email A-Z</option>
+            </select>
           </div>
         </div>
 
         <div class="users-grid">
-          <% users.forEach(user => { %>
-          <div class="user-card" data-user-id="<%= user.userid %>" data-role="<%= user.role %>">
+          <% users.forEach(currentUser => { %>
+          <div class="user-card" data-user-id="<%= currentUser.userid %>" data-role="<%= currentUser.role %>" data-name="<%= (currentUser.firstname + ' ' + currentUser.lastname).toLowerCase() %>" data-email="<%= currentUser.email.toLowerCase() %>" data-date="<%= new Date(currentUser.createdAt).getTime() %>">
             <div class="user-header">
               <div class="user-avatar">
-                <%= user.firstname.charAt(0).toUpperCase() %><%= user.lastname.charAt(0).toUpperCase() %>
+                <%= currentUser.firstname.charAt(0).toUpperCase() %><%= currentUser.lastname.charAt(0).toUpperCase() %>
               </div>
               <div class="user-info">
-                <h3><%= user.firstname %> <%= user.lastname %></h3>
-                <p class="user-email"><%= user.email %></p>
-                <p class="user-id">ID: <%= user.userid %></p>
+                <h3><%= currentUser.firstname %> <%= currentUser.lastname %></h3>
+                <p class="user-email"><%= currentUser.email %></p>
+                <p class="user-id">ID: <%= currentUser.userid %></p>
               </div>
             </div>
 
@@ -74,16 +82,16 @@
               <div class="user-meta">
                 <div class="meta-item">
                   <strong>Role:</strong>
-                  <span class="user-role role-<%= user.role %>"><%= user.role %></span>
+                  <span class="user-role role-<%= currentUser.role %>"><%= currentUser.role %></span>
                 </div>
                 <div class="meta-item">
                   <strong>Joined:</strong>
-                  <%= new Date(user.createdAt).toLocaleDateString() %>
+                  <%= new Date(currentUser.createdAt).toLocaleDateString() %>
                 </div>
-                <% if (user.phone) { %>
+                <% if (currentUser.phone) { %>
                 <div class="meta-item">
                   <strong>Phone:</strong>
-                  <%= user.phone %>
+                  <%= currentUser.phone %>
                 </div>
                 <% } %>
               </div>
@@ -91,23 +99,20 @@
 
             <div class="user-actions">
               <div class="role-controls">
-                <label for="role-<%= user.userid %>">Change Role:</label>
-                <select id="role-<%= user.userid %>" class="role-select" data-user-id="<%= user.userid %>">
-                  <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
-                  <option value="contributor" <%= user.role === 'contributor' ? 'selected' : '' %>>Contributor</option>
-                  <option value="viewer" <%= user.role === 'viewer' ? 'selected' : '' %>>Viewer</option>
+                <label for="role-<%= currentUser.userid %>">Change Role:</label>
+                <select id="role-<%= currentUser.userid %>" class="role-select" data-user-id="<%= currentUser.userid %>">
+                  <option value="admin" <%= currentUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                  <option value="contributor" <%= currentUser.role === 'contributor' ? 'selected' : '' %>>Contributor</option>
+                  <option value="viewer" <%= currentUser.role === 'viewer' ? 'selected' : '' %>>Viewer</option>
                 </select>
-                <button class="button primary small update-role-btn" data-user-id="<%= user.userid %>">
+                <button class="button primary small update-role-btn" data-user-id="<%= currentUser.userid %>">
                   Update
                 </button>
               </div>
 
               <div class="action-buttons">
-                <% if (user.userid !== user.userid) { %>
-                <button class="button secondary small revoke-btn" data-user-id="<%= user.userid %>">
-                  Revoke Access
-                </button>
-                <button class="button danger small delete-btn" data-user-id="<%= user.userid %>">
+                <% if (user.userid !== currentUser.userid) { %>
+                <button class="button danger small delete-btn" data-user-id="<%= currentUser.userid %>">
                   Delete User
                 </button>
                 <% } else { %>
@@ -148,19 +153,17 @@
         // Search functionality
         const searchInput = document.getElementById('userSearch');
         const roleFilter = document.getElementById('roleFilter');
+        const sortFilter = document.getElementById('sortFilter');
 
         searchInput.addEventListener('input', filterUsers);
         roleFilter.addEventListener('change', filterUsers);
+        sortFilter.addEventListener('change', sortUsers);
 
         // Role update functionality
         document.querySelectorAll('.update-role-btn').forEach(btn => {
           btn.addEventListener('click', updateUserRole);
         });
 
-        // Revoke access functionality
-        document.querySelectorAll('.revoke-btn').forEach(btn => {
-          btn.addEventListener('click', revokeUserAccess);
-        });
 
         // Delete user functionality
         document.querySelectorAll('.delete-btn').forEach(btn => {
@@ -186,6 +189,41 @@
           } else {
             card.style.display = 'none';
           }
+        });
+
+        // Re-apply sorting after filtering
+        sortUsers();
+      }
+
+      function sortUsers() {
+        const sortFilter = document.getElementById('sortFilter');
+        const sortBy = sortFilter.value;
+        const usersGrid = document.querySelector('.users-grid');
+        const userCards = Array.from(document.querySelectorAll('.user-card'));
+
+        // Sort the array based on the selected criteria
+        userCards.sort((a, b) => {
+          switch (sortBy) {
+            case 'newest':
+              return parseInt(b.dataset.date) - parseInt(a.dataset.date);
+            case 'oldest':
+              return parseInt(a.dataset.date) - parseInt(b.dataset.date);
+            case 'name':
+              return a.dataset.name.localeCompare(b.dataset.name);
+            case 'name-desc':
+              return b.dataset.name.localeCompare(a.dataset.name);
+            case 'role':
+              return a.dataset.role.localeCompare(b.dataset.role);
+            case 'email':
+              return a.dataset.email.localeCompare(b.dataset.email);
+            default:
+              return 0;
+          }
+        });
+
+        // Re-append sorted cards to the grid
+        userCards.forEach(card => {
+          usersGrid.appendChild(card);
         });
       }
 
@@ -216,6 +254,12 @@
             roleSpan.textContent = newRole;
             roleSpan.className = `user-role role-${newRole}`;
             userCard.dataset.role = newRole;
+
+            // Update statistics
+            updateStatistics();
+
+            // Re-apply current filter
+            filterUsers();
           } else {
             showNotification('Error: ' + result.error, 'error');
           }
@@ -224,14 +268,6 @@
         }
       }
 
-      function revokeUserAccess(event) {
-        const userId = event.target.dataset.userId;
-        showConfirmModal(
-          'Revoke User Access',
-          'Are you sure you want to revoke this user\'s access? They will be downgraded to viewer role.',
-          () => performRevokeAccess(userId)
-        );
-      }
 
       function deleteUser(event) {
         const userId = event.target.dataset.userId;
@@ -268,35 +304,6 @@
         });
       }
 
-      async function performRevokeAccess(userId) {
-        try {
-          const response = await fetch('/api/revoke-user-access', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userId: userId })
-          });
-
-          const result = await response.json();
-
-          if (response.ok) {
-            showNotification('User access revoked successfully!', 'success');
-            // Update the role display
-            const userCard = document.querySelector(`[data-user-id="${userId}"]`);
-            const roleSpan = userCard.querySelector('.user-role');
-            const roleSelect = document.getElementById(`role-${userId}`);
-            roleSpan.textContent = 'viewer';
-            roleSpan.className = 'user-role role-viewer';
-            roleSelect.value = 'viewer';
-            userCard.dataset.role = 'viewer';
-          } else {
-            showNotification('Error: ' + result.error, 'error');
-          }
-        } catch (error) {
-          showNotification('Error revoking access: ' + error.message, 'error');
-        }
-      }
 
       async function performDeleteUser(userId) {
         try {
@@ -315,12 +322,39 @@
             // Remove the user card from the UI
             const userCard = document.querySelector(`[data-user-id="${userId}"]`);
             userCard.remove();
+
+            // Update statistics
+            updateStatistics();
+
+            // Re-apply current filter (though user is removed, this ensures consistency)
+            filterUsers();
           } else {
             showNotification('Error: ' + result.error, 'error');
           }
         } catch (error) {
           showNotification('Error deleting user: ' + error.message, 'error');
         }
+      }
+
+      function updateStatistics() {
+        // Count users by role
+        const userCards = document.querySelectorAll('.user-card');
+        let adminCount = 0;
+        let contributorCount = 0;
+        let viewerCount = 0;
+
+        userCards.forEach(card => {
+          const role = card.dataset.role;
+          if (role === 'admin') adminCount++;
+          else if (role === 'contributor') contributorCount++;
+          else if (role === 'viewer') viewerCount++;
+        });
+
+        // Update the statistics display
+        document.getElementById('totalUsers').textContent = userCards.length;
+        document.getElementById('adminCount').textContent = adminCount;
+        document.getElementById('contributorCount').textContent = contributorCount;
+        document.getElementById('viewerCount').textContent = viewerCount;
       }
     </script>
   </body>

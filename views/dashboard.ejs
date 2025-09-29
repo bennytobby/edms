@@ -31,8 +31,8 @@
           <button type="submit">Search</button>
         </form>
 
-        <form method="get" action="/dashboard" class="filter-controls">
-          <select name="category" class="filter-select" onchange="this.form.submit()">
+        <div class="filter-controls">
+          <select id="categoryFilter" class="filter-select">
             <option value="">All Categories</option>
             <option value="documents" <%= (category === 'documents') ? 'selected' : '' %>>Documents</option>
             <option value="images" <%= (category === 'images') ? 'selected' : '' %>>Images</option>
@@ -41,17 +41,14 @@
             <option value="archives" <%= (category === 'archives') ? 'selected' : '' %>>Archives</option>
           </select>
 
-          <select name="sort" class="filter-select" onchange="this.form.submit()">
+          <select id="sortFilter" class="filter-select">
             <option value="newest" <%= (sort === 'newest') ? 'selected' : '' %>>Newest First</option>
             <option value="oldest" <%= (sort === 'oldest') ? 'selected' : '' %>>Oldest First</option>
             <option value="name" <%= (sort === 'name') ? 'selected' : '' %>>Name A-Z</option>
             <option value="size" <%= (sort === 'size') ? 'selected' : '' %>>Size</option>
             <option value="uploader" <%= (sort === 'uploader') ? 'selected' : '' %>>Uploader</option>
           </select>
-
-          <!-- Preserve search term -->
-          <input type="hidden" name="search" value="<%= search || '' %>">
-        </form>
+        </div>
       </div>
 
       <section class="file-list">
@@ -63,7 +60,7 @@
         <% } else { %>
         <div class="file-grid">
           <% files.forEach(file => { %>
-          <div class="file-card animate-fade-in">
+          <div class="file-card animate-fade-in" data-category="<%= file.category %>" data-uploader="<%= file.uploadedBy %>" data-size="<%= file.size %>" data-name="<%= file.originalName.toLowerCase() %>" data-date="<%= new Date(file.uploadDate).getTime() %>">
             <div class="file-header">
               <div class="file-icon">
                 📄
@@ -208,5 +205,70 @@
     </footer>
 
     <script src="/js/app.js"></script>
+    <script>
+      // Dashboard Client-Side Filtering
+      document.addEventListener('DOMContentLoaded', function() {
+        initDashboardFilters();
+      });
+
+      function initDashboardFilters() {
+        const categoryFilter = document.getElementById('categoryFilter');
+        const sortFilter = document.getElementById('sortFilter');
+
+        if (categoryFilter) {
+          categoryFilter.addEventListener('change', filterFiles);
+        }
+
+        if (sortFilter) {
+          sortFilter.addEventListener('change', sortFiles);
+        }
+      }
+
+      function filterFiles() {
+        const categoryFilter = document.getElementById('categoryFilter');
+        const selectedCategory = categoryFilter.value;
+        const fileCards = document.querySelectorAll('.file-card');
+
+        fileCards.forEach(card => {
+          const fileCategory = card.dataset.category;
+
+          if (!selectedCategory || fileCategory === selectedCategory) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      function sortFiles() {
+        const sortFilter = document.getElementById('sortFilter');
+        const sortBy = sortFilter.value;
+        const fileGrid = document.querySelector('.file-grid');
+        const fileCards = Array.from(document.querySelectorAll('.file-card'));
+
+        // Sort the array based on the selected criteria
+        fileCards.sort((a, b) => {
+          switch (sortBy) {
+            case 'newest':
+              return parseInt(b.dataset.date) - parseInt(a.dataset.date);
+            case 'oldest':
+              return parseInt(a.dataset.date) - parseInt(b.dataset.date);
+            case 'name':
+              return a.dataset.name.localeCompare(b.dataset.name);
+            case 'size':
+              return parseInt(b.dataset.size) - parseInt(a.dataset.size);
+            case 'uploader':
+              return a.dataset.uploader.localeCompare(b.dataset.uploader);
+            default:
+              return 0;
+          }
+        });
+
+        // Re-append sorted cards to the grid
+        fileCards.forEach(card => {
+          fileGrid.appendChild(card);
+        });
+      }
+    </script>
   </body>
 </html>

@@ -756,44 +756,6 @@ app.post('/api/delete-user', async (req, res) => {
     }
 });
 
-app.post('/api/revoke-user-access', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    try {
-        const { userId } = req.body;
-
-        if (!userId) {
-            return res.status(400).json({ error: 'Missing userId' });
-        }
-
-        // Prevent admin from revoking their own access
-        if (userId === req.session.user.userid) {
-            return res.status(400).json({ error: 'Cannot revoke your own access' });
-        }
-
-        await client.connect();
-        const result = await client
-            .db(userCollection.db)
-            .collection(userCollection.collection)
-            .updateOne(
-                { userid: userId },
-                { $set: { role: 'viewer', updatedAt: new Date() } }
-            );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        res.json({ success: true, message: 'User access revoked successfully' });
-    } catch (error) {
-        console.error('Error revoking user access:', error);
-        res.status(500).json({ error: 'Failed to revoke user access' });
-    } finally {
-        await client.close();
-    }
-});
 
 // Error handling middleware for multer file size errors
 app.use((error, req, res, next) => {
