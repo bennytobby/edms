@@ -196,10 +196,10 @@ function initFileUpload() {
                 // Show file info
                 showFileInfo(file, this);
 
-                // Validate file size (10MB limit)
-                const maxSize = 10 * 1024 * 1024; // 10MB
+                // Validate file size (100MB limit)
+                const maxSize = 100 * 1024 * 1024; // 100MB
                 if (file.size > maxSize) {
-                    showFieldError(this, 'File size must be less than 10MB');
+                    showFieldError(this, 'File size must be less than 100MB');
                     this.value = '';
                     return;
                 }
