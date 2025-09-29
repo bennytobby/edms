@@ -10,7 +10,8 @@
     <header class="topbar">
       <h2>EDMS Dashboard</h2>
       <div class="user-info">
-        Welcome, <strong><%= firstname %></strong> |
+        Welcome, <strong><%= firstname %></strong>
+        <span class="user-role role-<%= user.role %>"><%= user.role %></span> |
         <a href="/logout" class="logout-btn">Logout</a>
       </div>
     </header>
@@ -102,8 +103,14 @@
 
             <div class="file-actions">
               <a href="/download/<%= file.filename %>" class="button primary">Download</a>
-              <a href="/delete/<%= file.filename %>" class="button danger"
-                 onclick="return confirm('Are you sure you want to delete this file?')">Delete</a>
+              <% if (user.role === 'admin' || (user.role === 'contributor' && file.uploadedBy === user.userid)) { %>
+                <a href="/delete/<%= file.filename %>" class="button danger"
+                   onclick="return confirm('Are you sure you want to delete this file?')">Delete</a>
+              <% } else { %>
+                <button class="button danger disabled"
+                        onclick="alert('Contact your admin for delete permissions')"
+                        title="Contact your admin for delete permissions">Delete</button>
+              <% } %>
             </div>
           </div>
           <% }); %>
@@ -112,6 +119,7 @@
       </section>
 
       <section class="upload-section">
+        <% if (user.role === 'admin' || user.role === 'contributor') { %>
         <div class="upload-header">
           <h3>Upload a New File</h3>
           <p>Add documents to your EDMS library with proper categorization</p>
@@ -171,11 +179,24 @@
 
           <div class="form-actions">
             <button type="submit" class="button primary upload-btn">
-              <span class="button-icon">⬆️</span>
               Upload File
             </button>
           </div>
         </form>
+        <% } else { %>
+        <div class="upload-disabled">
+          <div class="upload-disabled-content">
+            <div class="upload-disabled-icon">📁</div>
+            <h4>Upload Restricted</h4>
+            <p>You don't have permission to upload files. Contact your admin for upload access.</p>
+            <button class="button primary disabled"
+                    onclick="alert('Contact your admin for upload permissions')"
+                    title="Contact your admin for upload permissions">
+              Upload File
+            </button>
+          </div>
+        </div>
+        <% } %>
       </section>
     </main>
 

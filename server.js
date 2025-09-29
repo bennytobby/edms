@@ -201,6 +201,7 @@ app.get('/dashboard', async (req, res) => {
         res.render('dashboard', {
             firstname: req.session.user.firstname,
             email: req.session.user.email,
+            user: req.session.user, // Pass the full user object
             files: fileDocs,
             search: searchTerm,
             category: category,
@@ -339,7 +340,9 @@ app.post('/registerSubmit', async function (req, res) {
             userid: req.body.userid,
             email: req.body.email,
             pass: hashedPassword,
-            phone: phone
+            phone: phone,
+            role: req.body.role || 'contributor', // Default to contributor if no role specified
+            createdAt: new Date()
         };
 
         await client
@@ -406,8 +409,8 @@ app.post('/loginSubmit', async function (req, res) {
             });
         }
 
-        const { firstname, lastname, userid, email, phone } = result;
-        const userData = { firstname, lastname, userid, email, phone };
+        const { firstname, lastname, userid, email, phone, role } = result;
+        const userData = { firstname, lastname, userid, email, phone, role };
 
         // Create JWT token for Vercel
         const token = createToken(userData);

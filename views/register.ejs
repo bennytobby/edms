@@ -9,6 +9,9 @@
   <body>
     <header class="topbar">
       <h2>Register - EDMS</h2>
+      <div class="header-actions">
+        <a href="/" class="button secondary">Home</a>
+      </div>
     </header>
 
     <main class="container">
@@ -101,6 +104,16 @@
             id="phone"
             placeholder="123-456-7890"
           />
+        </div>
+
+        <div class="form-group">
+          <label for="role">Account Type<span class="req">*</span></label>
+          <select name="role" id="role" required>
+            <option value="">Select your role</option>
+            <option value="viewer">Viewer - View and download files only</option>
+            <option value="contributor">Contributor - Upload, view, and download files</option>
+            <option value="admin">Admin - Full access and management</option>
+          </select>
         </div>
 
         <div class="form-buttons">
