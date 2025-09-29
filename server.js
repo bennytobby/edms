@@ -521,12 +521,7 @@ app.post("/upload", upload.single("document"), async (req, res) => {
 
 // API endpoint to generate signed URLs for direct S3 uploads
 app.post('/api/get-signed-url', async (req, res) => {
-    console.log('API: get-signed-url called');
-    console.log('Session user:', req.session.user);
-    console.log('Request body:', req.body);
-
     if (!req.session.user) {
-        console.log('No session user found');
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -546,9 +541,7 @@ app.post('/api/get-signed-url', async (req, res) => {
             Expires: 300 // 5 minutes
         };
 
-        console.log('S3 params:', s3Params);
         const signedUrl = s3.getSignedUrl('putObject', s3Params);
-        console.log('Generated signed URL');
 
         res.json({
             signedUrl,
@@ -566,12 +559,7 @@ app.post('/api/get-signed-url', async (req, res) => {
 
 // API endpoint to confirm file upload and save metadata
 app.post('/api/confirm-upload', async (req, res) => {
-    console.log('API: confirm-upload called');
-    console.log('Session user:', req.session.user);
-    console.log('Request body:', req.body);
-
     if (!req.session.user) {
-        console.log('No session user found');
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
