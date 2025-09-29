@@ -33,12 +33,15 @@ const express = require("express");
 const nodemailer = require('nodemailer');
 const cookieParser = require('cookie-parser');
 const app = express();
-app.use(express.static(__dirname));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); // Add cookie parser middleware
 app.set("views", path.resolve(__dirname, "views"));
 app.set("view engine", "ejs");
+
+// Serve static files
+app.use(express.static(__dirname));
 app.use("/styles", express.static(path.join(__dirname, "styles")));
+app.use("/js", express.static(path.join(__dirname, "public/js")));
 
 
 /* Session Handling - JWT-based for Vercel */
