@@ -149,15 +149,45 @@ app.get('/dashboard', async (req, res) => {
     }
 
     const searchTerm = req.query.search?.trim().toLowerCase();
-    const searchFilter = searchTerm
-        ? {
-            $or: [
-                { originalName: { $regex: searchTerm, $options: "i" } },
-                { uploadedBy: { $regex: searchTerm, $options: "i" } },
-                { tags: { $in: [searchTerm] } }
-            ]
-        }
-        : {};
+    const category = req.query.category;
+    const sortBy = req.query.sort || 'newest';
+
+    // Build search filter
+    let searchFilter = {};
+
+    if (searchTerm) {
+        searchFilter.$or = [
+            { originalName: { $regex: searchTerm, $options: "i" } },
+            { uploadedBy: { $regex: searchTerm, $options: "i" } },
+            { tags: { $in: [searchTerm] } },
+            { description: { $regex: searchTerm, $options: "i" } }
+        ];
+    }
+
+    if (category) {
+        searchFilter.category = category;
+    }
+
+    // Build sort object
+    let sortObject = {};
+    switch (sortBy) {
+        case 'oldest':
+            sortObject = { uploadDate: 1 };
+            break;
+        case 'name':
+            sortObject = { originalName: 1 };
+            break;
+        case 'size':
+            sortObject = { size: -1 };
+            break;
+        case 'uploader':
+            sortObject = { uploadedBy: 1 };
+            break;
+        case 'newest':
+        default:
+            sortObject = { uploadDate: -1 };
+            break;
+    }
 
     try {
         await client.connect();
@@ -165,7 +195,7 @@ app.get('/dashboard', async (req, res) => {
             .db(fileCollection.db)
             .collection(fileCollection.collection)
             .find(searchFilter)
-            .sort({ uploadDate: -1 })
+            .sort(sortObject)
             .toArray();
 
         res.render('dashboard', {
@@ -416,6 +446,24 @@ app.post("/upload", upload.single("document"), async (req, res) => {
 
     try {
         const s3Result = await s3.upload(s3Params).promise();
+        // Determine file category based on MIME type
+        let category = req.body.category;
+        if (!category) {
+            if (file.mimetype.startsWith('image/')) {
+                category = 'images';
+            } else if (file.mimetype.includes('pdf') || file.mimetype.includes('document')) {
+                category = 'documents';
+            } else if (file.mimetype.includes('presentation') || file.mimetype.includes('powerpoint')) {
+                category = 'presentations';
+            } else if (file.mimetype.includes('spreadsheet') || file.mimetype.includes('excel')) {
+                category = 'spreadsheets';
+            } else if (file.mimetype.includes('zip') || file.mimetype.includes('rar')) {
+                category = 'archives';
+            } else {
+                category = 'other';
+            }
+        }
+
         const fileMeta = {
             filename: s3Key,
             originalName: file.originalname,
@@ -425,7 +473,8 @@ app.post("/upload", upload.single("document"), async (req, res) => {
             uploadDate: new Date(),
             uploadedBy: req.session.user.userid,
             description: req.body.description || "",
-            tags: req.body.tags ? req.body.tags.split(',').map(tag => tag.trim().toLowerCase()) : []
+            tags: req.body.tags ? req.body.tags.split(',').map(tag => tag.trim().toLowerCase()) : [],
+            category: category
         };
 
         await client.connect();
