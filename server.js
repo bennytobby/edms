@@ -519,6 +519,48 @@ app.post("/upload", upload.single("document"), async (req, res) => {
     }
 });
 
+// Admin Dashboard
+app.get('/admin', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+
+    if (req.session.user.role !== 'admin') {
+        return res.render('error', {
+            title: "Access Denied",
+            message: "You don't have permission to access the admin dashboard.",
+            link: "/dashboard",
+            linkText: "Back to Dashboard"
+        });
+    }
+
+    try {
+        await client.connect();
+        const users = await client
+            .db(userCollection.db)
+            .collection(userCollection.collection)
+            .find({}, { projection: { pass: 0 } }) // Exclude password field
+            .sort({ createdAt: -1 })
+            .toArray();
+
+        res.render('admin', {
+            title: "Admin Dashboard",
+            user: req.session.user,
+            users: users
+        });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.render('error', {
+            title: "Database Error",
+            message: "Failed to load user data.",
+            link: "/dashboard",
+            linkText: "Back to Dashboard"
+        });
+    } finally {
+        await client.close();
+    }
+});
+
 // API endpoint to generate signed URLs for direct S3 uploads
 app.post('/api/get-signed-url', async (req, res) => {
     if (!req.session.user) {
@@ -607,6 +649,147 @@ app.post('/api/confirm-upload', async (req, res) => {
     } catch (error) {
         console.error('Error confirming upload:', error);
         res.status(500).json({ error: 'Failed to confirm upload' });
+    } finally {
+        await client.close();
+    }
+});
+
+// User Management API Endpoints
+app.post('/api/update-user-role', async (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const { userId, newRole } = req.body;
+
+        if (!userId || !newRole) {
+            return res.status(400).json({ error: 'Missing userId or newRole' });
+        }
+
+        if (!['admin', 'contributor', 'viewer'].includes(newRole)) {
+            return res.status(400).json({ error: 'Invalid role' });
+        }
+
+        await client.connect();
+        const result = await client
+            .db(userCollection.db)
+            .collection(userCollection.collection)
+            .updateOne(
+                { userid: userId },
+                { $set: { role: newRole, updatedAt: new Date() } }
+            );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ success: true, message: 'User role updated successfully' });
+    } catch (error) {
+        console.error('Error updating user role:', error);
+        res.status(500).json({ error: 'Failed to update user role' });
+    } finally {
+        await client.close();
+    }
+});
+
+app.post('/api/delete-user', async (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId' });
+        }
+
+        // Prevent admin from deleting themselves
+        if (userId === req.session.user.userid) {
+            return res.status(400).json({ error: 'Cannot delete your own account' });
+        }
+
+        await client.connect();
+
+        // Delete user's files from S3 and database
+        const userFiles = await client
+            .db(fileCollection.db)
+            .collection(fileCollection.collection)
+            .find({ uploadedBy: userId })
+            .toArray();
+
+        // Delete files from S3
+        for (const file of userFiles) {
+            try {
+                await s3.deleteObject({
+                    Bucket: AWS_BUCKET,
+                    Key: file.filename
+                }).promise();
+            } catch (s3Error) {
+                console.error('Error deleting file from S3:', s3Error);
+            }
+        }
+
+        // Delete user's files from database
+        await client
+            .db(fileCollection.db)
+            .collection(fileCollection.collection)
+            .deleteMany({ uploadedBy: userId });
+
+        // Delete user account
+        const result = await client
+            .db(userCollection.db)
+            .collection(userCollection.collection)
+            .deleteOne({ userid: userId });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Failed to delete user' });
+    } finally {
+        await client.close();
+    }
+});
+
+app.post('/api/revoke-user-access', async (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'Missing userId' });
+        }
+
+        // Prevent admin from revoking their own access
+        if (userId === req.session.user.userid) {
+            return res.status(400).json({ error: 'Cannot revoke your own access' });
+        }
+
+        await client.connect();
+        const result = await client
+            .db(userCollection.db)
+            .collection(userCollection.collection)
+            .updateOne(
+                { userid: userId },
+                { $set: { role: 'viewer', updatedAt: new Date() } }
+            );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ success: true, message: 'User access revoked successfully' });
+    } catch (error) {
+        console.error('Error revoking user access:', error);
+        res.status(500).json({ error: 'Failed to revoke user access' });
     } finally {
         await client.close();
     }

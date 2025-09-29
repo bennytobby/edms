@@ -11,8 +11,11 @@
       <h2>EDMS Dashboard</h2>
       <div class="user-info">
         Welcome, <strong><%= firstname %></strong>
-        <span class="user-role role-<%= user.role %>"><%= user.role %></span> |
-        <a href="/logout" class="logout-btn">Logout</a>
+        <span class="user-role role-<%= user.role %>"><%= user.role %></span>
+        <% if (user.role === 'admin') { %>
+        | <a href="/admin" class="logout-btn">Admin Panel</a>
+        <% } %>
+        | <a href="/logout" class="logout-btn">Logout</a>
       </div>
     </header>
 
