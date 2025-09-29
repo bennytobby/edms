@@ -124,7 +124,12 @@ const bcrypt = require('bcrypt');
 /* Upload */
 const multer = require("multer");
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 100 * 1024 * 1024 // 100MB limit
+    }
+});
 
 app.get('/', function (req, res) {
     res.render('index', { title: "Welcome to EDMS" });
@@ -511,6 +516,19 @@ app.post("/upload", upload.single("document"), async (req, res) => {
     } finally {
         await client.close();
     }
+});
+
+// Error handling middleware for multer file size errors
+app.use((error, req, res, next) => {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.render('error', {
+            title: "File Too Large",
+            message: "The file you're trying to upload exceeds the 100MB limit. Please choose a smaller file.",
+            link: "/dashboard",
+            linkText: "Back to Dashboard"
+        });
+    }
+    next(error);
 });
 
 // Export the app for testing
