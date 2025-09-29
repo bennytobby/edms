@@ -57,7 +57,6 @@
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
               <option value="name">Name A-Z</option>
-              <option value="name-desc">Name Z-A</option>
               <option value="role">Role</option>
               <option value="email">Email A-Z</option>
             </select>
@@ -66,7 +65,7 @@
 
         <div class="users-grid">
           <% users.forEach(currentUser => { %>
-          <div class="user-card" data-user-id="<%= currentUser.userid %>" data-role="<%= currentUser.role %>" data-name="<%= (currentUser.firstname + ' ' + currentUser.lastname).toLowerCase() %>" data-email="<%= currentUser.email.toLowerCase() %>" data-date="<%= new Date(currentUser.createdAt).getTime() %>">
+          <div class="user-card" data-user-id="<%= currentUser.userid %>" data-role="<%= currentUser.role %>" data-name="<%= (currentUser.firstname + ' ' + currentUser.lastname).toLowerCase() %>" data-email="<%= currentUser.email.toLowerCase() %>" data-date="<%= (currentUser.createdAt ? new Date(currentUser.createdAt).getTime() : 0) %>">
             <div class="user-header">
               <div class="user-avatar">
                 <%= currentUser.firstname.charAt(0).toUpperCase() %><%= currentUser.lastname.charAt(0).toUpperCase() %>
@@ -205,13 +204,17 @@
         userCards.sort((a, b) => {
           switch (sortBy) {
             case 'newest':
-              return parseInt(b.dataset.date) - parseInt(a.dataset.date);
+              // Handle invalid dates by treating them as oldest (0)
+              const dateA = parseInt(a.dataset.date) || 0;
+              const dateB = parseInt(b.dataset.date) || 0;
+              return dateB - dateA;
             case 'oldest':
-              return parseInt(a.dataset.date) - parseInt(b.dataset.date);
+              // Handle invalid dates by treating them as oldest (0)
+              const dateAOld = parseInt(a.dataset.date) || 0;
+              const dateBOld = parseInt(b.dataset.date) || 0;
+              return dateAOld - dateBOld;
             case 'name':
               return a.dataset.name.localeCompare(b.dataset.name);
-            case 'name-desc':
-              return b.dataset.name.localeCompare(a.dataset.name);
             case 'role':
               return a.dataset.role.localeCompare(b.dataset.role);
             case 'email':

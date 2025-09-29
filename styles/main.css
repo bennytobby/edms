@@ -1345,7 +1345,7 @@ footer {
 
 .user-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
 }
@@ -1363,22 +1363,32 @@ footer {
   font-size: var(--font-size-lg);
 }
 
+.user-info {
+  flex: 1;
+  min-width: 0; /* Allow flex item to shrink */
+}
+
 .user-info h3 {
   margin: 0 0 var(--space-1) 0;
   color: var(--color-text);
   font-size: var(--font-size-lg);
+  word-break: break-word;
 }
 
 .user-email {
   color: var(--color-text-light);
   font-size: var(--font-size-sm);
   margin: 0 0 var(--space-1) 0;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  line-height: 1.3;
 }
 
 .user-id {
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
   margin: 0;
+  white-space: nowrap;
 }
 
 .user-details {
