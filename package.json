@@ -25,6 +25,7 @@
   },
   "scripts": {
     "start": "node server.js",
+    "build": "echo 'Build completed'",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --verbose",
