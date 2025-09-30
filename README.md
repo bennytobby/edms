@@ -15,7 +15,7 @@ A production-ready document management platform built with **Node.js**, **Expres
 
 ## ✨ Key Features
 
-- **🔐 Secure Authentication** - JWT + session-based auth with bcrypt hashing
+- **🔐 Secure Authentication** - JSON Web Tokens + session-based auth with bcrypt hashing
 - **👥 Role-Based Access Control** - Admin, Contributor, Viewer permissions
 - **☁️ Cloud Storage** - Direct AWS S3 integration with 100MB file support
 - **🔍 Smart Search** - Client-side filtering and real-time search
