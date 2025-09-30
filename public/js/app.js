@@ -557,6 +557,26 @@ function initPreviewButtons() {
 function openPreview(filename, filetype) {
     console.log('Opening preview for:', filename, filetype);
 
+    // For non-previewable files, open directly in new tab
+    const nonPreviewableTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/zip',
+        'application/x-rar-compressed'
+    ];
+
+    if (nonPreviewableTypes.includes(filetype)) {
+        // Open in new tab for non-previewable files
+        const downloadUrl = `/download/${encodeURIComponent(filename)}`;
+        window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+        return;
+    }
+
     const modal = document.getElementById('previewModal');
     const title = document.getElementById('previewTitle');
     const content = document.getElementById('previewContent');
@@ -580,11 +600,10 @@ function openPreview(filename, filetype) {
     // Determine preview method based on file type
     if (filetype.startsWith('image/')) {
         previewImage(filename, content);
-    } else if (filetype === 'application/pdf') {
-        previewPDF(filename, content);
     } else if (filetype.startsWith('text/')) {
         previewText(filename, content);
     } else {
+        // For other file types, show unsupported message
         content.innerHTML = `
             <div class="preview-unsupported">
                 <p>Preview not available for this file type.</p>
