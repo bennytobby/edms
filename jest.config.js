@@ -16,8 +16,8 @@ module.exports = {
     coverageReporters: ['text', 'lcov', 'html'],
     verbose: true,
     testTimeout: 30000,
-  // Handle ES modules and Node.js 20.x compatibility
-  transformIgnorePatterns: [],
+    // Handle ES modules and Node.js 20.x compatibility
+    transformIgnorePatterns: [],
     // Ensure compatibility with Node.js 20.x
     globals: {
         'ts-jest': {
