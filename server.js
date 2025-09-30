@@ -1417,7 +1417,7 @@ app.post('/api/update-user-role', async (req, res) => {
         }
 
         await client.connect();
-        
+
         // Check if user exists and is protected
         const user = await client
             .db(userCollection.db)
@@ -1430,7 +1430,7 @@ app.post('/api/update-user-role', async (req, res) => {
 
         // Prevent role changes for protected users
         if (user.isProtected) {
-            return res.status(403).json({ 
+            return res.status(403).json({
                 error: 'Cannot modify protected system account',
                 message: 'This user account is protected and cannot have its role changed'
             });
