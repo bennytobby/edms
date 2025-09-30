@@ -4,7 +4,17 @@ A full-stack web application demonstrating modern software engineering practices
 
 ## 🚀 Live Demo
 
-**[View Live Application](https://your-vercel-app.vercel.app)** - Experience the full EDMS functionality
+**[View Live Application](https://edms-blue.vercel.app/)** - Experience the full EDMS functionality
+
+### **🧪 Test Credentials (Pre-configured for Demo)**
+
+| Role | User ID | Password | Access Level |
+|------|---------|----------|--------------|
+| **Admin** | `admin_1` | `admin` | Full system access, user management |
+| **Contributor** | `cont_1` | `cont` | Upload, download, delete own files |
+| **Viewer** | `view_1` | `view` | View and download files only |
+
+*Or create your own account using the registration form.*
 
 ## ✨ Key Features
 
@@ -137,6 +147,219 @@ npm run test:integration   # Integration tests
 npm run test:security      # Security tests
 npm run test:performance   # Performance tests
 ```
+
+## 🎯 **Recruiter Testing Guide**
+
+### **How to Test This Application**
+
+This section provides recruiters with a comprehensive testing guide to evaluate the technical capabilities demonstrated in this project.
+
+#### **🔐 Role-Based Access Testing**
+
+**1. Test Admin Functionality:**
+- Login with `admin_1` / `admin`
+- Navigate to "Admin Panel" in the header
+- Test user management features:
+  - View all users and their roles
+  - Change user roles (Admin ↔ Contributor ↔ Viewer)
+  - Delete users
+  - Test real-time statistics updates
+- Verify admin can access all files and delete any file
+
+**2. Test Contributor Functionality:**
+- Login with `cont_1` / `cont`
+- Test file operations:
+  - Upload files (various formats and sizes)
+  - Download files
+  - Delete only files you uploaded
+  - Preview files (images, PDFs, text files)
+- Verify contributor cannot access admin panel
+- Test that you cannot delete other users' files
+
+**3. Test Viewer Functionality:**
+- Login with `view_1` / `view`
+- Test read-only access:
+  - View all files
+  - Download files
+  - Preview files
+- Verify viewer cannot upload or delete files
+- Test that upload form is not available
+
+#### **📁 File Upload & Management Testing**
+
+**Test File Types & Sizes:**
+- **Small files** (< 1MB): Text files, small images
+- **Medium files** (1-10MB): PDFs, documents, images
+- **Large files** (10-100MB): Videos, archives, large documents
+- **Edge case**: Try uploading a file > 100MB (should fail gracefully)
+
+**Test Special Characters in Filenames:**
+- Upload files with spaces: `My Document (Final Version).txt`
+- Upload files with international characters: `Résumé - John Smith.pdf`
+- Upload files with special symbols: `File@#$%^&*().txt`
+- Upload files with unicode: `Unicode Test: αβγδε 中文 🚀.txt`
+
+**Expected Results:**
+- All files should upload successfully
+- Download filenames should be sanitized but readable
+- No HTTP header errors in browser console
+- Email notifications should display properly
+
+#### **🔍 Search & Filter Testing**
+
+**Test Search Functionality:**
+- Search by filename (partial matches)
+- Search by uploader name
+- Search by file tags
+- Search with international characters
+- Test case-insensitive search
+
+**Test Filtering:**
+- Filter by file categories (Documents, Images, etc.)
+- Sort by date (newest/oldest first)
+- Sort by file size
+- Sort by uploader
+- Test client-side filtering performance
+
+#### **👁️ Preview Functionality Testing**
+
+**Test File Previews:**
+- **Images**: JPG, PNG files should display in modal
+- **PDFs**: Should show "Download PDF" message with download link
+- **Text files**: Should display content in modal
+- **Other formats**: Should show appropriate preview or download option
+
+**Test Preview Modal:**
+- Modal should be centered on screen
+- Close button should work
+- Download button should work
+- Modal should handle different screen sizes
+
+#### **📧 Email Notification Testing**
+
+**Test Email Features:**
+- Upload a file and check for confirmation email
+- Delete a file and check for deletion notification
+- Register a new account and check for welcome email
+- Verify email content displays special characters correctly
+
+#### **🛡️ Security Testing**
+
+**Test Authentication:**
+- Try accessing protected routes without login
+- Test session timeout
+- Test JWT token functionality
+- Test password hashing (check network requests)
+
+**Test Authorization:**
+- Try accessing admin features as non-admin
+- Try deleting other users' files as contributor
+- Test role-based UI elements
+
+#### **⚡ Performance Testing**
+
+**Test Upload Performance:**
+- Upload multiple files simultaneously
+- Test with slow internet connection
+- Monitor upload progress indicators
+- Test direct S3 upload functionality
+
+**Test Client-Side Performance:**
+- Test filtering with large number of files
+- Test search responsiveness
+- Test modal loading times
+- Test page load performance
+
+#### **🌐 Cross-Browser Testing**
+
+**Test Browser Compatibility:**
+- Chrome, Firefox, Safari, Edge
+- Mobile browsers (iOS Safari, Chrome Mobile)
+- Test responsive design on different screen sizes
+- Test touch interactions on mobile devices
+
+#### **🔧 Technical Evaluation Points**
+
+**Backend Architecture:**
+- RESTful API design
+- Database schema and relationships
+- File storage architecture (AWS S3)
+- Authentication and authorization
+- Error handling and logging
+
+**Frontend Architecture:**
+- Client-side JavaScript organization
+- CSS architecture and responsive design
+- User experience and interface design
+- Performance optimization techniques
+
+**DevOps & Deployment:**
+- CI/CD pipeline implementation
+- Environment configuration
+- Production deployment
+- Monitoring and error tracking
+
+#### **📊 Success Criteria**
+
+**✅ Technical Excellence Indicators:**
+- All file types upload and download correctly
+- No console errors or HTTP 500 errors
+- Smooth user experience across all features
+- Proper error handling and user feedback
+- Responsive design works on all devices
+- Email notifications work reliably
+
+**✅ Code Quality Indicators:**
+- Clean, readable code structure
+- Proper error handling
+- Security best practices
+- Performance optimization
+- Modern development practices
+
+#### **🚨 Common Issues to Check**
+
+**Potential Problems:**
+- Files with special characters causing download errors
+- Preview modal positioning issues
+- Email notifications not working
+- Search functionality not responding
+- Mobile responsiveness issues
+- Browser compatibility problems
+
+**Debugging Tips:**
+- Check browser console for JavaScript errors
+- Check network tab for failed API requests
+- Test with different file types and sizes
+- Test with different user roles
+- Test on different devices and browsers
+
+#### **📁 Special Character Testing Files**
+
+This project includes a comprehensive test suite with **50+ test files** containing various special characters to validate the sanitization functionality:
+
+**Test File Categories:**
+- **International Characters**: `Résumé - John Smith.pdf`, `日本語テストファイル.txt`, `中文测试文档.pdf`
+- **Special Symbols**: `File@#$%^&*()_+-=[]{}|;:,.<>?.txt`
+- **Spaces & Punctuation**: `My Document (Final Version).txt`, `Screenshot 2024-09-29 at 7.55.35 PM.png`
+- **Unicode & Emoji**: `Unicode Test: αβγδε 中文 🚀.txt`
+- **Control Characters**: Files with newlines, tabs, and mixed control characters
+- **Edge Cases**: Very long filenames, multiple spaces, leading/trailing spaces
+
+**How to Use Test Files:**
+1. **Download test files** from the repository's `test-files/` directory
+2. **Upload various file types** with special characters
+3. **Test download functionality** - filenames should be sanitized but readable
+4. **Test preview functionality** - should work with all file types
+5. **Test email notifications** - should display special characters properly
+6. **Verify no errors** in browser console or server logs
+
+**Expected Sanitization Results:**
+- **Before**: `"File with αβγδε and \"quotes\" and newlines.txt"`
+- **After**: `"File with  and 'quotes' and newlines.txt"`
+- **Before**: `"Résumé - John Smith.pdf"`
+- **After**: `"Rsum - John Smith.pdf"`
+
+This testing validates the robust filename sanitization system that handles any file type with special characters, ensuring enterprise-grade reliability.
 
 ## 🔮 Upcoming Features
 
