@@ -5,6 +5,25 @@ process.stdin.setEncoding("utf8");
 /* MongoDB Connections */
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, './.env') });
+
+// Check for required environment variables
+const requiredEnvVars = [
+    'MONGO_CONNECTION_STRING',
+    'MONGO_DB_NAME',
+    'MONGO_FILECOLLECTION',
+    'MONGO_USERCOLLECTION',
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'AWS_REGION',
+    'AWS_S3_BUCKET'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+    console.error('Missing required environment variables:', missingVars.join(', '));
+    console.error('Please set these variables in your Vercel dashboard');
+}
+
 const uri = process.env.MONGO_CONNECTION_STRING;
 const fileCollection = { db: process.env.MONGO_DB_NAME, collection: process.env.MONGO_FILECOLLECTION };
 const userCollection = { db: process.env.MONGO_DB_NAME, collection: process.env.MONGO_USERCOLLECTION };
@@ -205,6 +224,15 @@ app.get('/api-docs-health', (req, res) => {
         status: 'API Documentation is running',
         endpoints: Object.keys(swaggerSpec.paths || {}).length,
         timestamp: new Date().toISOString()
+    });
+});
+
+// Basic health check endpoint
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
     });
 });
 
@@ -1622,5 +1650,12 @@ module.exports = app;
 
 // Only start the server if this file is run directly (not imported)
 if (require.main === module) {
-    app.listen(portNumber);
+    try {
+        app.listen(portNumber, () => {
+            console.log(`EDMS Server started successfully on port ${portNumber}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
 }
