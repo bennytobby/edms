@@ -15,5 +15,13 @@ module.exports = {
     coverageDirectory: 'coverage',
     coverageReporters: ['text', 'lcov', 'html'],
     verbose: true,
-    testTimeout: 30000
+    testTimeout: 30000,
+    // Handle ES modules
+    transformIgnorePatterns: [
+        'node_modules/(?!(@vercel/analytics)/)'
+    ],
+    // Mock Vercel Analytics for tests
+    moduleNameMapper: {
+        '^@vercel/analytics/server$': '<rootDir>/tests/mocks/vercel-analytics.mock.js'
+    }
 };
