@@ -571,9 +571,9 @@ function openPreview(filename, filetype) {
     ];
 
     if (nonPreviewableTypes.includes(filetype)) {
-        // Open in new tab for non-previewable files
-        const downloadUrl = `/download/${encodeURIComponent(filename)}`;
-        window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+        // Open in new tab for non-previewable files (like resume links)
+        const viewUrl = `/view/${encodeURIComponent(filename)}`;
+        window.open(viewUrl, '_blank', 'noopener,noreferrer');
         return;
     }
 

@@ -736,6 +736,44 @@ app.get("/download/:filename", async (req, res) => {
     }
 });
 
+// View endpoint for opening files in browser (like resume links)
+app.get("/view/:filename", async (req, res) => {
+    if (!req.session.user) return res.redirect("/login");
+
+    // Decode the filename to handle URL encoding
+    const filename = decodeURIComponent(req.params.filename);
+    const params = { Bucket: AWS_BUCKET, Key: filename };
+
+    try {
+        const data = await s3.getObject(params).promise();
+
+        // Get the original filename from database for proper display name
+        await client.connect();
+        const fileDoc = await client
+            .db(fileCollection.db)
+            .collection(fileCollection.collection)
+            .findOne({ filename: filename });
+
+        let viewFilename = filename; // Fallback to S3 key
+        if (fileDoc && fileDoc.originalName) {
+            viewFilename = fileDoc.originalName;
+        }
+
+        // Sanitize filename for Content-Disposition header
+        const sanitizedFilename = sanitizeForHeader(viewFilename);
+
+        // Set headers for inline viewing (like resume links)
+        res.setHeader("Content-Disposition", `inline; filename="${sanitizedFilename}"`);
+        res.setHeader("Content-Type", data.ContentType || 'application/octet-stream');
+        res.send(data.Body);
+    } catch (err) {
+        console.error("S3 view error:", err);
+        res.status(500).send("File could not be viewed.");
+    } finally {
+        await client.close();
+    }
+});
+
 /**
  * @swagger
  * /registerSubmit:
