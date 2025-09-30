@@ -138,7 +138,7 @@ async function createProtectedSystemAccounts() {
             {
                 firstname: 'System',
                 lastname: 'Admin',
-                userid: 'admin_1',
+                userid: 'admin',
                 email: 'admin@edms.system',
                 pass: await bcrypt.hash('admin', 10),
                 role: 'admin',
@@ -148,7 +148,7 @@ async function createProtectedSystemAccounts() {
             {
                 firstname: 'System',
                 lastname: 'Contributor',
-                userid: 'cont_1',
+                userid: 'cont',
                 email: 'contributor@edms.system',
                 pass: await bcrypt.hash('cont', 10),
                 role: 'contributor',
@@ -158,7 +158,7 @@ async function createProtectedSystemAccounts() {
             {
                 firstname: 'System',
                 lastname: 'Viewer',
-                userid: 'view_1',
+                userid: 'view',
                 email: 'viewer@edms.system',
                 pass: await bcrypt.hash('view', 10),
                 role: 'viewer',

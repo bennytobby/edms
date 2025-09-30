@@ -10,9 +10,9 @@ A full-stack web application demonstrating modern software engineering practices
 
 | Role | User ID | Password | Access Level | Protection |
 |------|---------|----------|--------------|-----------|
-| **Admin** | `admin_1` | `admin` | Full system access, user management | 🛡️ Protected |
-| **Contributor** | `cont_1` | `cont` | Upload, download, delete own files | 🛡️ Protected |
-| **Viewer** | `view_1` | `view` | View and download files only | 🛡️ Protected |
+| **Admin** | `admin` | `admin` | Full system access, user management | 🛡️ Protected |
+| **Contributor** | `cont` | `cont` | Upload, download, delete own files | 🛡️ Protected |
+| **Viewer** | `view` | `view` | View and download files only | 🛡️ Protected |
 
 **🛡️ Protected System Accounts:**
 - These accounts are **indestructible** and cannot be deleted through the admin interface
@@ -163,7 +163,7 @@ This section provides recruiters with a comprehensive testing guide to evaluate 
 #### **🔐 Role-Based Access Testing**
 
 **1. Test Admin Functionality:**
-- Login with `admin_1` / `admin`
+- Login with `admin` / `admin`
 - Navigate to "Admin Panel" in the header
 - Test user management features:
   - View all users and their roles
@@ -172,13 +172,13 @@ This section provides recruiters with a comprehensive testing guide to evaluate 
   - Test real-time statistics updates
 - **Test Protected System Accounts:**
   - Look for 🛡️ "Protected" badges on system accounts
-  - Try to delete `admin_1`, `cont_1`, or `view_1` accounts
+  - Try to delete `admin`, `cont`, or `view` accounts
   - Verify delete buttons are disabled for protected accounts
   - Confirm error message when attempting to delete protected accounts
 - Verify admin can access all files and delete any file
 
 **2. Test Contributor Functionality:**
-- Login with `cont_1` / `cont`
+- Login with `cont` / `cont`
 - Test file operations:
   - Upload files (various formats and sizes)
   - Download files
@@ -188,7 +188,7 @@ This section provides recruiters with a comprehensive testing guide to evaluate 
 - Test that you cannot delete other users' files
 
 **3. Test Viewer Functionality:**
-- Login with `view_1` / `view`
+- Login with `view` / `view`
 - Test read-only access:
   - View all files
   - Download files
