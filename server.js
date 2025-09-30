@@ -11,6 +11,10 @@ const userCollection = { db: process.env.MONGO_DB_NAME, collection: process.env.
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 
+/* Swagger/OpenAPI Documentation */
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
 
 /* AWS Connection */
 const AWS = require('aws-sdk');
@@ -38,6 +42,157 @@ app.use(express.json()); // Add JSON parser for API endpoints
 app.use(cookieParser()); // Add cookie parser middleware
 app.set("views", path.resolve(__dirname, "views"));
 app.set("view engine", "ejs");
+
+/* Swagger/OpenAPI Configuration */
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'EDMS API',
+            version: '1.0.0',
+            description: 'Electronic Document Management System API - A comprehensive document management solution with role-based access control, cloud storage integration, and advanced file handling capabilities.',
+            contact: {
+                name: 'EDMS Development Team',
+                email: 'admin@edms.system'
+            },
+            license: {
+                name: 'MIT',
+                url: 'https://opensource.org/licenses/MIT'
+            }
+        },
+        servers: [
+            {
+                url: 'https://edms-blue.vercel.app',
+                description: 'Production server'
+            },
+            {
+                url: 'http://localhost:3000',
+                description: 'Development server'
+            }
+        ],
+        components: {
+            securitySchemes: {
+                sessionAuth: {
+                    type: 'apiKey',
+                    in: 'cookie',
+                    name: 'connect.sid',
+                    description: 'Session-based authentication using Express sessions'
+                }
+            },
+            schemas: {
+                User: {
+                    type: 'object',
+                    properties: {
+                        userid: {
+                            type: 'string',
+                            example: 'admin'
+                        },
+                        firstname: {
+                            type: 'string',
+                            example: 'John'
+                        },
+                        lastname: {
+                            type: 'string',
+                            example: 'Doe'
+                        },
+                        email: {
+                            type: 'string',
+                            format: 'email',
+                            example: 'john.doe@example.com'
+                        },
+                        role: {
+                            type: 'string',
+                            enum: ['admin', 'contributor', 'viewer'],
+                            example: 'admin'
+                        },
+                        isProtected: {
+                            type: 'boolean',
+                            example: false
+                        },
+                        createdAt: {
+                            type: 'string',
+                            format: 'date-time',
+                            example: '2024-01-15T10:30:00Z'
+                        }
+                    }
+                },
+                File: {
+                    type: 'object',
+                    properties: {
+                        filename: {
+                            type: 'string',
+                            example: 'document_123456789.pdf'
+                        },
+                        originalName: {
+                            type: 'string',
+                            example: 'My Document.pdf'
+                        },
+                        size: {
+                            type: 'integer',
+                            example: 1024000
+                        },
+                        mimetype: {
+                            type: 'string',
+                            example: 'application/pdf'
+                        },
+                        category: {
+                            type: 'string',
+                            enum: ['documents', 'images', 'presentations', 'spreadsheets', 'archives'],
+                            example: 'documents'
+                        },
+                        uploadedBy: {
+                            type: 'string',
+                            example: 'admin'
+                        },
+                        uploadDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            example: '2024-01-15T10:30:00Z'
+                        }
+                    }
+                },
+                Error: {
+                    type: 'object',
+                    properties: {
+                        error: {
+                            type: 'string',
+                            example: 'User not found'
+                        },
+                        message: {
+                            type: 'string',
+                            example: 'The requested user could not be found'
+                        }
+                    }
+                }
+            }
+        },
+        tags: [
+            {
+                name: 'Authentication',
+                description: 'User authentication and session management'
+            },
+            {
+                name: 'User Management',
+                description: 'User account management and role operations'
+            },
+            {
+                name: 'File Operations',
+                description: 'File upload, download, and management operations'
+            },
+            {
+                name: 'Admin Dashboard',
+                description: 'Administrative functions and user management'
+            }
+        ]
+    },
+    apis: ['./server.js'] // Path to the API files
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'EDMS API Documentation'
+}));
 
 // Serve static files
 app.use(express.static(__dirname));
@@ -319,6 +474,46 @@ app.get('/logout', (req, res) => {
     });
 });
 
+/**
+ * @swagger
+ * /delete/{filename}:
+ *   get:
+ *     summary: Delete a file
+ *     description: Delete a file from the system. Only admin users can delete any file, contributors can only delete their own files.
+ *     tags: [File Operations]
+ *     security:
+ *       - sessionAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: filename
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: URL-encoded filename of the file to delete
+ *         example: "document_123456789.pdf"
+ *     responses:
+ *       302:
+ *         description: File deleted successfully - redirect to dashboard
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               example: "/dashboard"
+ *       401:
+ *         description: Unauthorized - redirect to login
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               example: "/login"
+ *       500:
+ *         description: File could not be deleted
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "File could not be deleted."
+ */
 app.get("/delete/:filename", async (req, res) => {
     if (!req.session.user) return res.redirect("/login");
 
@@ -355,6 +550,51 @@ app.get("/delete/:filename", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /download/{filename}:
+ *   get:
+ *     summary: Download a file
+ *     description: Download a file from the system. Filename is URL-encoded. Returns the file with proper Content-Disposition header.
+ *     tags: [File Operations]
+ *     security:
+ *       - sessionAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: filename
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: URL-encoded filename of the file to download
+ *         example: "document_123456789.pdf"
+ *     responses:
+ *       200:
+ *         description: File download successful
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *         headers:
+ *           Content-Disposition:
+ *             schema:
+ *               type: string
+ *               example: "attachment; filename=\"My Document.pdf\""
+ *       302:
+ *         description: Unauthorized - redirect to login
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               example: "/login"
+ *       500:
+ *         description: File could not be downloaded
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "File could not be downloaded."
+ */
 app.get("/download/:filename", async (req, res) => {
     if (!req.session.user) return res.redirect("/login");
 
@@ -390,6 +630,73 @@ app.get("/download/:filename", async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /registerSubmit:
+ *   post:
+ *     summary: Register a new user account
+ *     description: Create a new user account with the provided information. Returns success page on successful registration.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - first_name
+ *               - last_name
+ *               - userid
+ *               - email
+ *               - password
+ *               - confirm_pass
+ *               - role
+ *             properties:
+ *               first_name:
+ *                 type: string
+ *                 example: "John"
+ *               last_name:
+ *                 type: string
+ *                 example: "Doe"
+ *               userid:
+ *                 type: string
+ *                 example: "johndoe123"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "john.doe@example.com"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "securePassword123"
+ *               confirm_pass:
+ *                 type: string
+ *                 format: password
+ *                 example: "securePassword123"
+ *               phone:
+ *                 type: string
+ *                 pattern: "^\\d{3}-\\d{3}-\\d{4}$"
+ *                 example: "123-456-7890"
+ *               role:
+ *                 type: string
+ *                 enum: [admin, contributor, viewer]
+ *                 example: "contributor"
+ *     responses:
+ *       200:
+ *         description: Registration successful
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<html>Registration Complete</html>"
+ *       400:
+ *         description: Registration failed - validation error
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<html>Error: Email already exists</html>"
+ */
 app.post('/registerSubmit', async function (req, res) {
     try {
         await client.connect();
@@ -493,6 +800,50 @@ app.post('/registerSubmit', async function (req, res) {
 
 });
 
+/**
+ * @swagger
+ * /loginSubmit:
+ *   post:
+ *     summary: Authenticate user login
+ *     description: Authenticate user credentials and create a session. Redirects to dashboard on successful login.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userid
+ *               - password
+ *             properties:
+ *               userid:
+ *                 type: string
+ *                 example: "admin"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "admin"
+ *     responses:
+ *       302:
+ *         description: Login successful - redirect to dashboard
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               example: "/dashboard"
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *               example: "connect.sid=s%3A..."
+ *       401:
+ *         description: Login failed - invalid credentials
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               example: "/login"
+ */
 app.post('/loginSubmit', async function (req, res) {
     try {
         await client.connect();
@@ -547,6 +898,65 @@ app.post('/loginSubmit', async function (req, res) {
     }
 });
 
+/**
+ * @swagger
+ * /upload:
+ *   post:
+ *     summary: Upload a file
+ *     description: Upload a file to the system. Supports files up to 100MB. Only contributors and admins can upload files.
+ *     tags: [File Operations]
+ *     security:
+ *       - sessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - document
+ *             properties:
+ *               document:
+ *                 type: string
+ *                 format: binary
+ *                 description: File to upload (max 100MB)
+ *               category:
+ *                 type: string
+ *                 enum: [documents, images, presentations, spreadsheets, archives]
+ *                 example: "documents"
+ *               description:
+ *                 type: string
+ *                 example: "Important project document"
+ *     responses:
+ *       302:
+ *         description: File uploaded successfully - redirect to dashboard
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               example: "/dashboard"
+ *       401:
+ *         description: Unauthorized - redirect to login
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               example: "/login"
+ *       400:
+ *         description: Bad request - File too large or invalid format
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<html>Error: File too large</html>"
+ *       500:
+ *         description: Upload failed
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               example: "<html>Error: Upload failed</html>"
+ */
 app.post("/upload", upload.single("document"), async (req, res) => {
     if (!req.session.user) return res.redirect("/login");
     const file = req.file;
@@ -667,6 +1077,58 @@ app.get('/admin', async (req, res) => {
 });
 
 // API endpoint to generate signed URLs for direct S3 uploads
+/**
+ * @swagger
+ * /api/get-signed-url:
+ *   post:
+ *     summary: Get signed URL for direct S3 upload
+ *     description: Generate a pre-signed URL for direct file upload to AWS S3. Used for large file uploads to bypass server limitations.
+ *     tags: [File Operations]
+ *     security:
+ *       - sessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - filename
+ *               - contentType
+ *             properties:
+ *               filename:
+ *                 type: string
+ *                 example: "document_123456789.pdf"
+ *               contentType:
+ *                 type: string
+ *                 example: "application/pdf"
+ *     responses:
+ *       200:
+ *         description: Signed URL generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 signedUrl:
+ *                   type: string
+ *                   example: "https://edms-bucket.s3.amazonaws.com/document_123456789.pdf?X-Amz-Algorithm=..."
+ *                 key:
+ *                   type: string
+ *                   example: "document_123456789.pdf"
+ *       401:
+ *         description: Unauthorized - User not logged in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Failed to generate signed URL
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 app.post('/api/get-signed-url', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -705,6 +1167,74 @@ app.post('/api/get-signed-url', async (req, res) => {
 });
 
 // API endpoint to confirm file upload and save metadata
+/**
+ * @swagger
+ * /api/confirm-upload:
+ *   post:
+ *     summary: Confirm file upload and save metadata
+ *     description: Save file metadata to database after successful direct S3 upload. This completes the upload process.
+ *     tags: [File Operations]
+ *     security:
+ *       - sessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - filename
+ *               - originalName
+ *               - size
+ *               - contentType
+ *               - category
+ *             properties:
+ *               filename:
+ *                 type: string
+ *                 example: "document_123456789.pdf"
+ *               originalName:
+ *                 type: string
+ *                 example: "My Document.pdf"
+ *               size:
+ *                 type: integer
+ *                 example: 1024000
+ *               contentType:
+ *                 type: string
+ *                 example: "application/pdf"
+ *               category:
+ *                 type: string
+ *                 enum: [documents, images, presentations, spreadsheets, archives]
+ *                 example: "documents"
+ *               description:
+ *                 type: string
+ *                 example: "Important project document"
+ *     responses:
+ *       200:
+ *         description: File metadata saved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "File uploaded successfully"
+ *       401:
+ *         description: Unauthorized - User not logged in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Failed to save file metadata
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 app.post('/api/confirm-upload', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -760,6 +1290,65 @@ app.post('/api/confirm-upload', async (req, res) => {
 });
 
 // User Management API Endpoints
+/**
+ * @swagger
+ * /api/update-user-role:
+ *   post:
+ *     summary: Update user role
+ *     description: Change a user's role (admin, contributor, viewer). Only accessible by admin users.
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - sessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - newRole
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "user123"
+ *               newRole:
+ *                 type: string
+ *                 enum: [admin, contributor, viewer]
+ *                 example: "contributor"
+ *     responses:
+ *       200:
+ *         description: User role updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User role updated successfully"
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 app.post('/api/update-user-role', async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -798,6 +1387,72 @@ app.post('/api/update-user-role', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/delete-user:
+ *   post:
+ *     summary: Delete user account
+ *     description: Permanently delete a user account and all associated files. Cannot delete protected system accounts or own account.
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - sessionAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "user123"
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User deleted successfully"
+ *       400:
+ *         description: Bad request - Cannot delete own account or protected account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Cannot delete protected system account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 app.post('/api/delete-user', async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(401).json({ error: 'Unauthorized' });

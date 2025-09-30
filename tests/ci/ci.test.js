@@ -41,7 +41,7 @@ describe('CI/CD Pipeline Tests', () => {
             const requiredFiles = [
                 'server.js',
                 'package.json',
-                'Procfile',
+                'vercel.json',
                 'README.md'
             ];
 
