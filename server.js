@@ -242,6 +242,7 @@ app.get('/api-docs', (req, res) => {
         <body>
             <div id="swagger-ui"></div>
             <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+            <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
             <script>
                 SwaggerUIBundle({
                     url: '/api-docs/swagger.json',
@@ -249,7 +250,7 @@ app.get('/api-docs', (req, res) => {
                     deepLinking: true,
                     presets: [
                         SwaggerUIBundle.presets.apis,
-                        SwaggerUIBundle.presets.standalone
+                        SwaggerUIStandalonePreset
                     ],
                     plugins: [
                         SwaggerUIBundle.plugins.DownloadUrl
