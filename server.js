@@ -77,6 +77,15 @@ function verifyToken(token) {
     }
 }
 
+// Filename sanitization helper function
+function sanitizeForHeader(filename) {
+    return filename
+        .replace(/[^\x20-\x7E]/g, '') // Remove non-ASCII characters
+        .replace(/[\r\n\t]/g, ' ') // Replace control characters with spaces
+        .replace(/"/g, "'") // Replace quotes with single quotes
+        .trim();
+}
+
 // Session validation middleware
 app.use((req, res, next) => {
     // Skip session validation for public routes
@@ -255,7 +264,7 @@ app.get("/delete/:filename", async (req, res) => {
             from: process.env.EMAIL_USER,
             to: req.session.user.email,
             subject: "EDMS File Deletion Notice",
-            text: `Hi ${req.session.user.firstname},\n\nThe file '${filename}' has been deleted by your account.\n\n- EDMS Team`
+            text: `Hi ${req.session.user.firstname},\n\nThe file '${sanitizeForHeader(filename)}' has been deleted by your account.\n\n- EDMS Team`
         };
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) console.error("Error sending deletion email:", err);
@@ -294,11 +303,7 @@ app.get("/download/:filename", async (req, res) => {
         }
 
         // Sanitize filename for Content-Disposition header
-        const sanitizedFilename = downloadFilename
-            .replace(/[^\x20-\x7E]/g, '') // Remove non-ASCII characters
-            .replace(/[\r\n\t]/g, ' ') // Replace control characters with spaces
-            .replace(/"/g, "'") // Replace quotes with single quotes
-            .trim();
+        const sanitizedFilename = sanitizeForHeader(downloadFilename);
 
         res.setHeader("Content-Disposition", `attachment; filename="${sanitizedFilename}"`);
         res.send(data.Body);
@@ -522,7 +527,7 @@ app.post("/upload", upload.single("document"), async (req, res) => {
             from: process.env.EMAIL_USER,
             to: req.session.user.email,
             subject: "EDMS File Upload Confirmation",
-            text: `Hello ${req.session.user.firstname},\n\nYour file \"${file.originalname}\" has been uploaded successfully on ${new Date().toLocaleString()}.\n\n- EDMS Team`
+            text: `Hello ${req.session.user.firstname},\n\nYour file \"${sanitizeForHeader(file.originalname)}\" has been uploaded successfully on ${new Date().toLocaleString()}.\n\n- EDMS Team`
         };
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) console.error("Error sending email:", err);
@@ -662,7 +667,7 @@ app.post('/api/confirm-upload', async (req, res) => {
             from: process.env.EMAIL_USER,
             to: req.session.user.email,
             subject: "EDMS File Upload Confirmation",
-            text: `Hello ${req.session.user.firstname},\n\nYour file "${originalName}" has been uploaded successfully on ${new Date().toLocaleString()}.\n\n- EDMS Team`
+            text: `Hello ${req.session.user.firstname},\n\nYour file "${sanitizeForHeader(originalName)}" has been uploaded successfully on ${new Date().toLocaleString()}.\n\n- EDMS Team`
         };
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) console.error("Error sending email:", err);
