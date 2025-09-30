@@ -27,7 +27,7 @@
     "start": "node server.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --verbose",
     "test:unit": "jest tests/unit/",
     "test:integration": "jest tests/integration/",
     "test:security": "jest tests/security/",
