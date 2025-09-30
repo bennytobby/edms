@@ -129,6 +129,81 @@ const transporter = nodemailer.createTransport({
 /* Password Hashing */
 const bcrypt = require('bcrypt');
 
+// Function to create protected system accounts
+async function createProtectedSystemAccounts() {
+    try {
+        await client.connect();
+
+        const systemAccounts = [
+            {
+                firstname: 'System',
+                lastname: 'Admin',
+                userid: 'admin_1',
+                email: 'admin@edms.system',
+                pass: await bcrypt.hash('admin', 10),
+                role: 'admin',
+                isProtected: true,
+                createdAt: new Date()
+            },
+            {
+                firstname: 'System',
+                lastname: 'Contributor',
+                userid: 'cont_1',
+                email: 'contributor@edms.system',
+                pass: await bcrypt.hash('cont', 10),
+                role: 'contributor',
+                isProtected: true,
+                createdAt: new Date()
+            },
+            {
+                firstname: 'System',
+                lastname: 'Viewer',
+                userid: 'view_1',
+                email: 'viewer@edms.system',
+                pass: await bcrypt.hash('view', 10),
+                role: 'viewer',
+                isProtected: true,
+                createdAt: new Date()
+            }
+        ];
+
+        for (const account of systemAccounts) {
+            // Check if account already exists
+            const existingUser = await client
+                .db(userCollection.db)
+                .collection(userCollection.collection)
+                .findOne({ userid: account.userid });
+
+            if (!existingUser) {
+                await client
+                    .db(userCollection.db)
+                    .collection(userCollection.collection)
+                    .insertOne(account);
+                console.log(`✅ Created protected system account: ${account.userid}`);
+            } else {
+                // Update existing account to be protected if it isn't already
+                if (!existingUser.isProtected) {
+                    await client
+                        .db(userCollection.db)
+                        .collection(userCollection.collection)
+                        .updateOne(
+                            { userid: account.userid },
+                            { $set: { isProtected: true } }
+                        );
+                    console.log(`🛡️ Updated existing account to protected: ${account.userid}`);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error creating protected system accounts:', error);
+    } finally {
+        await client.close();
+    }
+}
+
+// Create protected system accounts on server startup
+createProtectedSystemAccounts();
+
 
 /* Upload */
 const multer = require("multer");
@@ -378,6 +453,7 @@ app.post('/registerSubmit', async function (req, res) {
             pass: hashedPassword,
             phone: phone,
             role: req.body.role || 'contributor', // Default to contributor if no role specified
+            isProtected: false, // Regular users are not protected by default
             createdAt: new Date()
         };
 
@@ -737,6 +813,18 @@ app.post('/api/delete-user', async (req, res) => {
         // Prevent admin from deleting themselves
         if (userId === req.session.user.userid) {
             return res.status(400).json({ error: 'Cannot delete your own account' });
+        }
+
+        // Check if user is protected (system accounts)
+        const userToDelete = await client
+            .db(userCollection.db)
+            .collection(userCollection.collection)
+            .findOne({ userid: userId });
+
+        if (userToDelete && userToDelete.isProtected) {
+            return res.status(403).json({
+                error: 'Cannot delete protected system account. This account is required for system functionality.'
+            });
         }
 
         await client.connect();

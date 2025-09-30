@@ -1486,6 +1486,30 @@ footer {
   text-align: center;
 }
 
+.protected-badge {
+  background: #f59e0b;
+  color: white;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  margin-left: var(--space-2);
+}
+
+.delete-btn.disabled {
+  background: #6b7280;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.delete-btn.disabled:hover {
+  background: #6b7280;
+  color: #9ca3af;
+  transform: none;
+}
+
 /* Modal Styles */
 .modal {
   display: none;

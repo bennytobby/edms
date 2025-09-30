@@ -111,11 +111,18 @@
 
               <div class="action-buttons">
                 <% if (user.userid !== currentUser.userid) { %>
-                <button class="button danger small delete-btn" data-user-id="<%= currentUser.userid %>">
-                  Delete User
-                </button>
+                  <% if (currentUser.isProtected) { %>
+                    <button class="button danger small delete-btn disabled" disabled title="Protected system account - cannot be deleted">
+                      Delete User
+                    </button>
+                    <span class="protected-badge">🛡️ Protected</span>
+                  <% } else { %>
+                    <button class="button danger small delete-btn" data-user-id="<%= currentUser.userid %>">
+                      Delete User
+                    </button>
+                  <% } %>
                 <% } else { %>
-                <span class="current-user-badge">Current User</span>
+                  <span class="current-user-badge">Current User</span>
                 <% } %>
               </div>
             </div>

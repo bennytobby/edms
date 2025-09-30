@@ -8,11 +8,17 @@ A full-stack web application demonstrating modern software engineering practices
 
 ### **🧪 Test Credentials (Pre-configured for Demo)**
 
-| Role | User ID | Password | Access Level |
-|------|---------|----------|--------------|
-| **Admin** | `admin_1` | `admin` | Full system access, user management |
-| **Contributor** | `cont_1` | `cont` | Upload, download, delete own files |
-| **Viewer** | `view_1` | `view` | View and download files only |
+| Role | User ID | Password | Access Level | Protection |
+|------|---------|----------|--------------|-----------|
+| **Admin** | `admin_1` | `admin` | Full system access, user management | 🛡️ Protected |
+| **Contributor** | `cont_1` | `cont` | Upload, download, delete own files | 🛡️ Protected |
+| **Viewer** | `view_1` | `view` | View and download files only | 🛡️ Protected |
+
+**🛡️ Protected System Accounts:**
+- These accounts are **indestructible** and cannot be deleted through the admin interface
+- They are automatically created on server startup
+- Required for system functionality and demo purposes
+- Can only be deleted directly through MongoDB if needed
 
 *Or create your own account using the registration form.*
 
@@ -162,8 +168,13 @@ This section provides recruiters with a comprehensive testing guide to evaluate 
 - Test user management features:
   - View all users and their roles
   - Change user roles (Admin ↔ Contributor ↔ Viewer)
-  - Delete users
+  - Delete users (regular users only)
   - Test real-time statistics updates
+- **Test Protected System Accounts:**
+  - Look for 🛡️ "Protected" badges on system accounts
+  - Try to delete `admin_1`, `cont_1`, or `view_1` accounts
+  - Verify delete buttons are disabled for protected accounts
+  - Confirm error message when attempting to delete protected accounts
 - Verify admin can access all files and delete any file
 
 **2. Test Contributor Functionality:**
