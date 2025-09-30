@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Electronic Document Management System",
   "engines": {
-    "node": ">=22.x"
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",

@@ -14,6 +14,7 @@ const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 /* Swagger/OpenAPI Documentation */
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const { track } = require('@vercel/analytics/server');
 
 
 /* AWS Connection */
@@ -193,6 +194,25 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'EDMS API Documentation'
 }));
+
+// Vercel Analytics - track is used directly in routes
+
+// Performance monitoring middleware
+app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        if (duration > 1000) { // Log slow requests
+            track('slow_request', {
+                path: req.path,
+                method: req.method,
+                duration: duration,
+                statusCode: res.statusCode
+            });
+        }
+    });
+    next();
+});
 
 // Serve static files
 app.use(express.static(__dirname));
@@ -780,6 +800,12 @@ app.post('/registerSubmit', async function (req, res) {
             else console.log("Welcome email sent successfully");
         });
 
+        // Track user registration
+        track('user_registered', {
+            userId: req.body.userid,
+            role: req.body.role || 'contributor'
+        });
+
         return res.render('success', {
             title: "Registration Complete",
             message: "Your account has been successfully created.",
@@ -1018,6 +1044,14 @@ app.post("/upload", upload.single("document"), async (req, res) => {
         transporter.sendMail(mailOptions, (err, info) => {
             if (err) console.error("Error sending email:", err);
             else console.log("Email sent successfully");
+        });
+
+        // Track file upload
+        track('file_uploaded', {
+            userId: req.session.user.userid,
+            fileSize: file.size,
+            fileType: file.mimetype,
+            category: category
         });
 
         res.render('success', {
@@ -1377,6 +1411,13 @@ app.post('/api/update-user-role', async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
+
+        // Track admin action
+        track('user_role_updated', {
+            adminId: req.session.user.userid,
+            targetUserId: userId,
+            newRole: newRole
+        });
 
         res.json({ success: true, message: 'User role updated successfully' });
     } catch (error) {
