@@ -19,6 +19,10 @@ const { track } = require('@vercel/analytics/server');
 
 /* AWS Connection */
 const AWS = require('aws-sdk');
+// Suppress AWS SDK v2 deprecation warning in development
+if (process.env.NODE_ENV !== 'production') {
+    process.removeAllListeners('warning');
+}
 const s3 = new AWS.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -211,7 +215,7 @@ app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
         const duration = Date.now() - start;
-        if (duration > 1000) { // Log slow requests
+        if (duration > 1000 && process.env.VERCEL_URL) { // Log slow requests (only in production)
             track('slow_request', {
                 path: req.path,
                 method: req.method,
@@ -809,11 +813,13 @@ app.post('/registerSubmit', async function (req, res) {
             else console.log("Welcome email sent successfully");
         });
 
-        // Track user registration
-        track('user_registered', {
-            userId: req.body.userid,
-            role: req.body.role || 'contributor'
-        });
+        // Track user registration (only in production)
+        if (process.env.VERCEL_URL) {
+            track('user_registered', {
+                userId: req.body.userid,
+                role: req.body.role || 'contributor'
+            });
+        }
 
         return res.render('success', {
             title: "Registration Complete",
@@ -1055,13 +1061,15 @@ app.post("/upload", upload.single("document"), async (req, res) => {
             else console.log("Email sent successfully");
         });
 
-        // Track file upload
-        track('file_uploaded', {
-            userId: req.session.user.userid,
-            fileSize: file.size,
-            fileType: file.mimetype,
-            category: category
-        });
+        // Track file upload (only in production)
+        if (process.env.VERCEL_URL) {
+            track('file_uploaded', {
+                userId: req.session.user.userid,
+                fileSize: file.size,
+                fileType: file.mimetype,
+                category: category
+            });
+        }
 
         res.render('success', {
             title: "Upload Successful",
@@ -1409,6 +1417,25 @@ app.post('/api/update-user-role', async (req, res) => {
         }
 
         await client.connect();
+        
+        // Check if user exists and is protected
+        const user = await client
+            .db(userCollection.db)
+            .collection(userCollection.collection)
+            .findOne({ userid: userId });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Prevent role changes for protected users
+        if (user.isProtected) {
+            return res.status(403).json({ 
+                error: 'Cannot modify protected system account',
+                message: 'This user account is protected and cannot have its role changed'
+            });
+        }
+
         const result = await client
             .db(userCollection.db)
             .collection(userCollection.collection)
@@ -1417,16 +1444,14 @@ app.post('/api/update-user-role', async (req, res) => {
                 { $set: { role: newRole, updatedAt: new Date() } }
             );
 
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ error: 'User not found' });
+        // Track admin action (only in production)
+        if (process.env.VERCEL_URL) {
+            track('user_role_updated', {
+                adminId: req.session.user.userid,
+                targetUserId: userId,
+                newRole: newRole
+            });
         }
-
-        // Track admin action
-        track('user_role_updated', {
-            adminId: req.session.user.userid,
-            targetUserId: userId,
-            newRole: newRole
-        });
 
         res.json({ success: true, message: 'User role updated successfully' });
     } catch (error) {
