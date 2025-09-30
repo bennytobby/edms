@@ -197,7 +197,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 
 // Health check for API docs
 app.get('/api-docs-health', (req, res) => {
-    res.json({ 
+    res.json({
         status: 'API Documentation is running',
         endpoints: Object.keys(swaggerSpec.paths || {}).length,
         timestamp: new Date().toISOString()
