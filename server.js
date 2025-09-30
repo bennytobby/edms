@@ -33,7 +33,14 @@ const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 /* Swagger/OpenAPI Documentation */
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const { track } = require('@vercel/analytics/server');
+
+// Vercel Analytics - mock function for now
+const track = (event, properties) => {
+    if (process.env.VERCEL_URL) {
+        console.log(`[ANALYTICS] ${event}:`, properties);
+    }
+    return Promise.resolve();
+};
 
 
 /* AWS Connection */
