@@ -1510,6 +1510,34 @@ footer {
   transform: none;
 }
 
+/* Disabled role controls */
+.role-select.disabled {
+  background: #6b7280;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+  border-color: #6b7280;
+}
+
+.role-select.disabled:hover {
+  background: #6b7280;
+  color: #9ca3af;
+  border-color: #6b7280;
+}
+
+.update-role-btn.disabled {
+  background: #6b7280;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.update-role-btn.disabled:hover {
+  background: #6b7280;
+  color: #9ca3af;
+  transform: none;
+}
+
 /* Modal Styles */
 .modal {
   display: none;

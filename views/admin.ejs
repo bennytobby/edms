@@ -99,14 +99,23 @@
             <div class="user-actions">
               <div class="role-controls">
                 <label for="role-<%= currentUser.userid %>">Change Role:</label>
-                <select id="role-<%= currentUser.userid %>" class="role-select" data-user-id="<%= currentUser.userid %>">
-                  <option value="admin" <%= currentUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
-                  <option value="contributor" <%= currentUser.role === 'contributor' ? 'selected' : '' %>>Contributor</option>
-                  <option value="viewer" <%= currentUser.role === 'viewer' ? 'selected' : '' %>>Viewer</option>
-                </select>
-                <button class="button primary small update-role-btn" data-user-id="<%= currentUser.userid %>">
-                  Update
-                </button>
+                <% if (currentUser.isProtected) { %>
+                  <select id="role-<%= currentUser.userid %>" class="role-select disabled" data-user-id="<%= currentUser.userid %>" disabled title="Protected system account - role cannot be changed">
+                    <option value="<%= currentUser.role %>" selected><%= currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1) %></option>
+                  </select>
+                  <button class="button primary small update-role-btn disabled" data-user-id="<%= currentUser.userid %>" disabled title="Protected system account - role cannot be changed">
+                    Update
+                  </button>
+                <% } else { %>
+                  <select id="role-<%= currentUser.userid %>" class="role-select" data-user-id="<%= currentUser.userid %>">
+                    <option value="admin" <%= currentUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                    <option value="contributor" <%= currentUser.role === 'contributor' ? 'selected' : '' %>>Contributor</option>
+                    <option value="viewer" <%= currentUser.role === 'viewer' ? 'selected' : '' %>>Viewer</option>
+                  </select>
+                  <button class="button primary small update-role-btn" data-user-id="<%= currentUser.userid %>">
+                    Update
+                  </button>
+                <% } %>
               </div>
 
               <div class="action-buttons">
@@ -240,6 +249,13 @@
       async function updateUserRole(event) {
         const userId = event.target.dataset.userId;
         const roleSelect = document.getElementById(`role-${userId}`);
+
+        // Check if the role select is disabled (protected user)
+        if (roleSelect.disabled) {
+          alert('Cannot modify protected system account');
+          return;
+        }
+
         const newRole = roleSelect.value;
 
         try {
