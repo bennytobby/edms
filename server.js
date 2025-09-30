@@ -195,6 +195,15 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customSiteTitle: 'EDMS API Documentation'
 }));
 
+// Health check for API docs
+app.get('/api-docs-health', (req, res) => {
+    res.json({ 
+        status: 'API Documentation is running',
+        endpoints: Object.keys(swaggerSpec.paths || {}).length,
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Vercel Analytics - track is used directly in routes
 
 // Performance monitoring middleware
