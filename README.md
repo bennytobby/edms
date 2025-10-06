@@ -84,9 +84,11 @@ npm start
 
 ## 🔗 Links
 
-- **Live Demo:** [https://edms-blue.vercel.app/](https://edms-blue.vercel.app/)
-- **API Docs:** [https://edms-blue.vercel.app/api-docs](https://edms-blue.vercel.app/api-docs)
-- **GitHub:** [View Source Code](https://github.com/bennytobby/edms)
+- **Live Demo:** [edms-blue.vercel.app/](https://edms-blue.vercel.app/)
+- **API Docs:** [edms-blue.vercel.app/api-docs](https://edms-blue.vercel.app/api-docs)
+- **GitHub Profile:** [github.com/bennytobby](https://github.com/bennytobby)
+- **LinkedIn:** [linkedin.com/in/pmachre](https://www.linkedin.com/in/pmachre)
+- **Portfolio:** [devcorpwebsite.vercel.app/](https://devcorpwebsite.vercel.app/)
 
 ---
 
