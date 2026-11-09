@@ -26,7 +26,7 @@ test.beforeAll(async () => {
   await client.close();
 });
 
-test("a user is refused with a wrong password, then signs in and sees the dashboard", async ({
+test("a user is refused with a wrong password, signs in, sees the dashboard and a real 404", async ({
   page,
 }) => {
   await page.goto("/login");
@@ -41,4 +41,9 @@ test("a user is refused with a wrong password, then signs in and sees the dashbo
   await page.getByRole("button", { name: "Sign In" }).click();
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByText(`Welcome, ${user.firstname}`)).toBeVisible();
+
+  const res = await page.goto("/this-page-does-not-exist");
+  expect(res?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1, name: "Page Not Found" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to Dashboard" })).toBeVisible();
 });
