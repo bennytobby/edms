@@ -301,7 +301,9 @@ app.use((req, res, next) => {
 });
 
 // Serve static files
-app.use(express.static(__dirname));
+// Only the public folder is served as files. Serving __dirname exposed server.js,
+// package.json and .git to anyone who asked for them.
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/styles", express.static(path.join(__dirname, "styles")));
 app.use("/js", express.static(path.join(__dirname, "public/js")));
 
@@ -1726,6 +1728,34 @@ app.use((error, req, res, next) => {
         });
     }
     next(error);
+});
+
+// 404: anything no route above handled.
+app.use((req, res) => {
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'Not found' });
+    }
+    res.status(404).render('error', {
+        title: "Page Not Found",
+        message: "That page doesn't exist. It may have moved, or the link may be wrong.",
+        link: req.session && req.session.user ? "/dashboard" : "/",
+        linkText: req.session && req.session.user ? "Back to Dashboard" : "Back to Home"
+    });
+});
+
+// Last-resort error page, instead of Express's default stack trace.
+app.use((error, req, res, next) => {
+    console.error('Unhandled error:', error);
+    if (res.headersSent) return next(error);
+    if (req.path.startsWith('/api/')) {
+        return res.status(500).json({ error: 'Something went wrong' });
+    }
+    res.status(500).render('error', {
+        title: "Something Went Wrong",
+        message: "An unexpected error happened. Please try again.",
+        link: "/",
+        linkText: "Back to Home"
+    });
 });
 
 // Export the app for testing

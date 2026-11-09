@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Electronic Document Management System",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "aws-sdk": "^2.1692.0",
@@ -17,7 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.20.0",
     "multer": "^2.0.0-rc.4",
-    "nodemailer": "^6.10.0",
+    "nodemailer": "^10.4.0",
     "redis": "^5.8.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
