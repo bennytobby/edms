@@ -113,3 +113,7 @@ temp/
 # Test files
 test-files/
 tests/e2e/
+
+# Playwright
+test-results/
+playwright-report/
